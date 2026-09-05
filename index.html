@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090414">
+  <title>Jackpot Spin</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#fff;background:radial-gradient(circle at 50% 10%,#44136d 0,#18072b 38%,#07030e 75%);display:grid;place-items:center;padding:22px}
+    .app{width:min(720px,100%);text-align:center}.tag{display:inline-block;padding:7px 13px;border:1px solid #a960ff;border-radius:99px;color:#efceff;background:#30104b;font-weight:800;font-size:13px;letter-spacing:.08em}.logo{margin:14px 0 0;font-size:clamp(40px,10vw,76px);line-height:1;font-weight:1000;background:linear-gradient(90deg,#ffe65b,#ff8c1a,#f84eff);-webkit-background-clip:text;color:transparent;text-shadow:0 8px 32px #ec31ff44}.sub{margin:10px auto 22px;max-width:520px;color:#d9cce6;font-size:17px}
+    .stage{position:relative;width:min(440px,90vw);margin:auto}.pointer{position:absolute;z-index:4;left:50%;top:-9px;transform:translateX(-50%);width:0;height:0;border-left:20px solid transparent;border-right:20px solid transparent;border-top:42px solid #fff06a;filter:drop-shadow(0 3px 5px #000)}
+    .wheel{aspect-ratio:1;border-radius:50%;border:10px solid #ffcc39;box-shadow:0 0 0 5px #9c5200,0 0 48px #d42eff99,inset 0 0 30px #0008;position:relative;overflow:hidden;background:conic-gradient(#e83e8c 0 60deg,#6328d9 60deg 120deg,#ff9d18 120deg 180deg,#167ee8 180deg 240deg,#19b970 240deg 300deg,#e63d52 300deg);transition:transform 4.2s cubic-bezier(.12,.68,.05,1)}
+    .label{position:absolute;left:50%;top:50%;width:43%;height:34px;transform-origin:0 50%;font-size:clamp(12px,3vw,17px);font-weight:900;text-shadow:0 2px 3px #000;display:flex;align-items:center;justify-content:flex-end;padding-right:18px}.label:nth-child(1){transform:rotate(30deg) translateY(-50%)}.label:nth-child(2){transform:rotate(90deg) translateY(-50%)}.label:nth-child(3){transform:rotate(150deg) translateY(-50%)}.label:nth-child(4){transform:rotate(210deg) translateY(-50%)}.label:nth-child(5){transform:rotate(270deg) translateY(-50%)}.label:nth-child(6){transform:rotate(330deg) translateY(-50%)}
+    .hub{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%);width:29%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:linear-gradient(#fff37b,#ef8700);border:7px solid #fff;color:#4b1600;font-weight:1000;font-size:clamp(15px,4vw,25px);box-shadow:0 4px 22px #0009;cursor:pointer}.hub:disabled{filter:grayscale(.5);cursor:wait}
+    .panel{margin:24px auto 0;padding:18px;border:1px solid #5b3678;background:#13091fd9;border-radius:20px;box-shadow:0 16px 50px #0008}.wallet{width:100%;border:0;border-radius:14px;padding:15px;background:linear-gradient(90deg,#914cff,#ee3ba9);color:white;font-size:17px;font-weight:900;cursor:pointer}.note{margin:12px 0 0;color:#bcaacb;font-size:13px}.result{display:none;margin:16px 0 0;padding:16px;border-radius:14px;background:#28103d;border:1px solid #c45cff;font-size:18px;font-weight:800}.rules{margin-top:18px;color:#a895b8;font-size:12px}.spark{position:fixed;pointer-events:none;font-size:24px;animation:fall 1.2s linear forwards}@keyframes fall{to{transform:translateY(250px) rotate(280deg);opacity:0}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <span class="tag">ONE FREE SPIN</span>
+    <h1 class="logo">JACKPOT SPIN</h1>
+    <p class="sub">Spin the wheel for a chance to win community tokens, an NFT reward, or another spin.</p>
+    <section class="stage">
+      <div class="pointer"></div>
+      <div class="wheel" id="wheel">
+        <div class="label">10 TOKENS</div><div class="label">NFT</div><div class="label">25 TOKENS</div><div class="label">TRY AGAIN</div><div class="label">50 TOKENS</div><div class="label">BONUS SPIN</div>
+      </div>
+      <button class="hub" id="spin" type="button">SPIN</button>
+    </section>
+    <section class="panel">
+      <button class="wallet" id="wallet" type="button">Connect MetaMask</button>
+      <div class="result" id="result"></div>
+      <p class="note" id="status">Connect your wallet, then tap SPIN.</p>
+    </section>
+    <p class="rules">Demo reward experience. A verified claim system and funded reward wallet must be connected before real prizes are distributed. Never share your recovery phrase.</p>
+  </main>
+  <script>
+    const prizes=['10 TOKENS','NFT REWARD','25 TOKENS','TRY AGAIN','50 TOKENS','BONUS SPIN'];
+    const wheel=document.querySelector('#wheel'),spin=document.querySelector('#spin'),wallet=document.querySelector('#wallet'),status=document.querySelector('#status'),result=document.querySelector('#result');
+    let connected=false,turn=0,used=false;
+    wallet.onclick=async()=>{if(!window.ethereum){status.textContent='MetaMask was not detected. Open this page inside the MetaMask browser.';return}try{const a=await ethereum.request({method:'eth_requestAccounts'});connected=true;wallet.textContent='Connected: '+a[0].slice(0,6)+'…'+a[0].slice(-4);status.textContent='Wallet connected. Your free spin is ready!'}catch(e){status.textContent='Connection was cancelled. No transaction was requested.'}};
+    spin.onclick=()=>{if(!connected){status.textContent='Connect MetaMask first, boss.';return}if(used){status.textContent='This free spin has already been used on this device.';return}used=true;spin.disabled=true;result.style.display='none';const pick=Math.floor(Math.random()*prizes.length);turn+=6+pick/6;wheel.style.transform=`rotate(${turn*360}deg)`;setTimeout(()=>{result.textContent='🎉 You landed on: '+prizes[pick];result.style.display='block';status.textContent='Save a screenshot of this result for verification.';spin.disabled=false;for(let i=0;i<18;i++){const s=document.createElement('span');s.className='spark';s.textContent=['✨','🪙','🎉'][i%3];s.style.left=Math.random()*100+'vw';s.style.top=Math.random()*40+'vh';document.body.appendChild(s);setTimeout(()=>s.remove(),1300)}},4300)};
+  </script>
+</body>
+</html>
