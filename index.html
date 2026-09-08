@@ -5,52 +5,238 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#090414">
   <title>Jackpot Spin</title>
+
   <style>
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#fff;background:radial-gradient(circle at 50% 10%,#44136d 0,#18072b 38%,#07030e 75%);display:grid;place-items:center;padding:22px}
-    .app{width:min(720px,100%);text-align:center}.tag{display:inline-block;padding:7px 13px;border:1px solid #a960ff;border-radius:99px;color:#efceff;background:#30104b;font-weight:800;font-size:13px;letter-spacing:.08em}.logo{margin:14px 0 0;font-size:clamp(40px,10vw,76px);line-height:1;font-weight:1000;background:linear-gradient(90deg,#ffe65b,#ff8c1a,#f84eff);-webkit-background-clip:text;color:transparent;text-shadow:0 8px 32px #ec31ff44}.sub{margin:10px auto 22px;max-width:520px;color:#d9cce6;font-size:17px}
-    .stage{position:relative;width:min(440px,90vw);margin:auto}.pointer{position:absolute;z-index:4;left:50%;top:-9px;transform:translateX(-50%);width:0;height:0;border-left:20px solid transparent;border-right:20px solid transparent;border-top:42px solid #fff06a;filter:drop-shadow(0 3px 5px #000)}
-    .wheel{aspect-ratio:1;border-radius:50%;border:10px solid #ffcc39;box-shadow:0 0 0 5px #9c5200,0 0 48px #d42eff99,inset 0 0 30px #0008;position:relative;overflow:hidden;background:conic-gradient(#e83e8c 0 45deg,#6328d9 45deg 90deg,#ff9d18 90deg 135deg,#167ee8 135deg 180deg,#19b970 180deg 225deg,#e63d52 225deg 270deg,#8b35cc 270deg 315deg,#d9900a 315deg);transition:transform 4.2s cubic-bezier(.12,.68,.05,1)}
-    .label{position:absolute;left:50%;top:50%;width:44%;height:30px;transform-origin:0 50%;font-size:clamp(9px,2.5vw,14px);font-weight:900;text-shadow:0 2px 3px #000;display:flex;align-items:center;justify-content:flex-end;padding-right:14px}.label:nth-child(1){transform:rotate(22.5deg) translateY(-50%)}.label:nth-child(2){transform:rotate(67.5deg) translateY(-50%)}.label:nth-child(3){transform:rotate(112.5deg) translateY(-50%)}.label:nth-child(4){transform:rotate(157.5deg) translateY(-50%)}.label:nth-child(5){transform:rotate(202.5deg) translateY(-50%)}.label:nth-child(6){transform:rotate(247.5deg) translateY(-50%)}.label:nth-child(7){transform:rotate(292.5deg) translateY(-50%)}.label:nth-child(8){transform:rotate(337.5deg) translateY(-50%)}
-    .hub{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-50%);width:29%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:linear-gradient(#fff37b,#ef8700);border:7px solid #fff;color:#4b1600;font-weight:1000;font-size:clamp(15px,4vw,25px);box-shadow:0 4px 22px #0009;cursor:pointer}.hub:disabled{filter:grayscale(.5);cursor:wait}
-    .panel{margin:24px auto 0;padding:18px;border:1px solid #5b3678;background:#13091fd9;border-radius:20px;box-shadow:0 16px 50px #0008}.wallet{width:100%;border:1px solid #75538e;border-radius:14px;padding:13px;background:#251334;color:#eadff2;font-size:15px;font-weight:800;cursor:pointer}.note{margin:12px 0 0;color:#bcaacb;font-size:14px}.result{display:none;margin:16px 0 0;padding:16px;border-radius:14px;background:#28103d;border:1px solid #c45cff;font-size:18px;font-weight:800}.play{display:none;width:100%;margin-top:12px;border:0;border-radius:14px;padding:16px;background:linear-gradient(90deg,#ffb21d,#f14f9c);color:#2a0921;font-size:18px;font-weight:1000;cursor:pointer}.points{margin:13px 0 0;color:#ffe273;font-weight:900}.rules{margin-top:18px;color:#a895b8;font-size:12px}.spark{position:fixed;pointer-events:none;font-size:24px;animation:fall 1.2s linear forwards}@keyframes fall{to{transform:translateY(250px) rotate(280deg);opacity:0}}
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      padding:28px 16px;
+      font-family:system-ui,-apple-system,sans-serif;
+      color:#fff;
+      text-align:center;
+      background:radial-gradient(circle at top,#39146b,#090414 65%);
+    }
+    .app{width:min(520px,100%);margin:auto}
+    .tag{
+      display:inline-block;
+      padding:7px 14px;
+      border:1px solid #ffc83d;
+      border-radius:999px;
+      color:#ffc83d;
+      font-weight:800;
+    }
+    h1{
+      margin:14px 0 6px;
+      font-size:clamp(38px,10vw,64px);
+      color:#ffd54a;
+    }
+    .sub{color:#d5c9e8;line-height:1.5}
+    .stage{
+      position:relative;
+      width:min(390px,88vw);
+      margin:28px auto;
+    }
+    .pointer{
+      position:absolute;
+      z-index:5;
+      left:50%;
+      top:-20px;
+      transform:translateX(-50%);
+      width:0;
+      height:0;
+      border-left:18px solid transparent;
+      border-right:18px solid transparent;
+      border-top:36px solid #fff;
+    }
+    .wheel{
+      aspect-ratio:1;
+      border-radius:50%;
+      border:10px solid #ffc83d;
+      background:conic-gradient(
+        #ff4057 0 60deg,
+        #773ee8 60deg 120deg,
+        #00aee8 120deg 180deg,
+        #17b978 180deg 240deg,
+        #ff8c22 240deg 300deg,
+        #e63fb4 300deg 360deg
+      );
+      box-shadow:0 0 30px #ffc83d66;
+      transition:transform 4s cubic-bezier(.15,.75,.1,1);
+    }
+    .spin{
+      position:absolute;
+      z-index:6;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:105px;
+      height:105px;
+      border:7px solid #ffc83d;
+      border-radius:50%;
+      background:#160828;
+      color:#fff;
+      font-size:22px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .spin:disabled{opacity:.55;cursor:not-allowed}
+    .prizes{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+      margin:18px 0;
+      text-align:left;
+    }
+    .prizes span{
+      padding:10px;
+      border:1px solid #69458e;
+      border-radius:10px;
+      background:#170b29;
+    }
+    .panel{
+      padding:20px;
+      border:1px solid #68458c;
+      border-radius:16px;
+      background:#13091fd9;
+    }
+    .result{
+      min-height:32px;
+      color:#ffd54a;
+      font-size:22px;
+      font-weight:900;
+    }
+    .status{color:#d5c9e8;line-height:1.5}
+    .notice{
+      margin-top:18px;
+      padding:14px;
+      border-left:4px solid #ffc83d;
+      border-radius:8px;
+      background:#241136;
+      color:#eadff7;
+      line-height:1.5;
+      text-align:left;
+    }
   </style>
 </head>
+
 <body>
   <main class="app">
-    <span class="tag">ONE FREE SPIN</span>
-    <h1 class="logo">JACKPOT SPIN</h1>
-    <p class="sub">Spin the wheel, discover a game, and play. Come back tomorrow for another free spin.</p>
+    <span class="tag">MANUAL BETA</span>
+    <h1>JACKPOT SPIN</h1>
+    <p class="sub">
+      One free spin every 24 hours on this device.
+      Spin for a chance to receive tokens, an NFT, or a bonus spin.
+    </p>
+
     <section class="stage">
       <div class="pointer"></div>
-      <div class="wheel" id="wheel">
-        <div class="label">PRISM 3D</div><div class="label">SKATER KITTY</div><div class="label">ZOMBIES</div><div class="label">RAMSES SLOTS</div><div class="label">PRISM 3D</div><div class="label">SKATER KITTY</div><div class="label">ZOMBIES</div><div class="label">RAMSES SLOTS</div>
-      </div>
-      <button class="hub" id="spin" type="button">SPIN</button>
+      <div class="wheel" id="wheel"></div>
+      <button class="spin" id="spin" type="button">SPIN</button>
     </section>
+
+    <section class="prizes">
+      <span>🪙 10 Tokens</span>
+      <span>🖼️ NFT Reward</span>
+      <span>🪙 25 Tokens</span>
+      <span>🔁 Try Again</span>
+      <span>💰 50 Tokens</span>
+      <span>🎟️ Bonus Spin</span>
+    </section>
+
     <section class="panel">
-      <div class="result" id="result"></div>
-      <button class="play" id="play" type="button">PLAY GAME</button>
-      <p class="points" id="points">Play Points: 0</p>
-      <p class="note" id="status">Tap SPIN to choose today's game.</p>
-      <button class="wallet" id="wallet" type="button">Connect MetaMask (optional)</button>
+      <div class="result" id="result">Ready for your free spin!</div>
+      <p class="status" id="status">Tap SPIN to begin.</p>
+
+      <div class="notice">
+        <strong>Beta notice:</strong> Results are requests pending manual
+        verification. Rewards are not transferred automatically and depend on
+        eligibility and available promotional funding. Never send payment or
+        share your recovery phrase.
+      </div>
     </section>
-    <p class="rules">One free game spin per day on this device. Play Points are beta participation points, not cryptocurrency or guaranteed prizes. Never share your recovery phrase.</p>
   </main>
+
   <script>
-    const games=[
-      {name:'Prism Match 3D',url:'https://play.gamepix.com/prism-match-3d/embed?sid=SC462'},
-      {name:'Skater Kitty',url:'https://play.gamepix.com/skater-kitty/embed?sid=SC462'},
-      {name:'Quarantine Zombies',url:'https://play.gamepix.com/quarantine-zombies/embed?sid=SC462'},
-      {name:'Ramses Treasure Slots',url:'https://play.gamepix.com/ramses-treasure/embed?sid=SC462'}
+    const prizes = [
+      "10 Tokens",
+      "NFT Reward",
+      "25 Tokens",
+      "Try Again",
+      "50 Tokens",
+      "Bonus Spin"
     ];
-    const wheel=document.querySelector('#wheel'),spin=document.querySelector('#spin'),wallet=document.querySelector('#wallet'),status=document.querySelector('#status'),result=document.querySelector('#result'),play=document.querySelector('#play'),pointsBox=document.querySelector('#points');
-    const today=new Date().toISOString().slice(0,10);
-    let connected=false,turn=0,walletAddress='',selectedGame=null,points=Number(localStorage.getItem('jackpotPlayPoints')||0),used=localStorage.getItem('jackpotSpinDate')===today;
-    pointsBox.textContent='Play Points: '+points;
-    if(used)status.textContent='Today\'s spin was used. Come back tomorrow for another game.';
-    wallet.onclick=async()=>{if(!window.ethereum){status.textContent='MetaMask was not detected. Open this page inside the MetaMask browser.';return}try{const a=await ethereum.request({method:'eth_requestAccounts'});walletAddress=a[0];connected=true;wallet.textContent='Connected: '+a[0].slice(0,6)+'…'+a[0].slice(-4);status.textContent='Wallet connected. Your free spin is ready!'}catch(e){status.textContent='Connection was cancelled. No transaction was requested.'}};
-    play.onclick=()=>{if(!selectedGame)return;if(localStorage.getItem('jackpotPointDate')!==today){points+=1;localStorage.setItem('jackpotPlayPoints',String(points));localStorage.setItem('jackpotPointDate',today);pointsBox.textContent='Play Points: '+points}status.textContent='Game opened! Your participation point was added.';window.open(selectedGame.url,'_blank')};
-    spin.onclick=()=>{if(used){status.textContent='Today\'s free spin has already been used on this device.';return}used=true;localStorage.setItem('jackpotSpinDate',today);spin.disabled=true;result.style.display='none';play.style.display='none';const pick=Math.floor(Math.random()*8);selectedGame=games[pick%4];turn+=6+pick/8;wheel.style.transform=`rotate(${turn*360}deg)`;setTimeout(()=>{result.textContent='🎮 Today\'s game: '+selectedGame.name;result.style.display='block';play.textContent='PLAY '+selectedGame.name.toUpperCase();play.style.display='block';status.textContent='Tap PLAY GAME to begin. No score requirement in this beta.';spin.disabled=false;for(let i=0;i<18;i++){const s=document.createElement('span');s.className='spark';s.textContent=['✨','🎮','🎉'][i%3];s.style.left=Math.random()*100+'vw';s.style.top=Math.random()*40+'vh';document.body.appendChild(s);setTimeout(()=>s.remove(),1300)}},4300)};
+
+    const wheel = document.getElementById("wheel");
+    const spinButton = document.getElementById("spin");
+    const result = document.getElementById("result");
+    const status = document.getElementById("status");
+    const storageKey = "jackpotSpinLastTime";
+    const waitTime = 24 * 60 * 60 * 1000;
+    let rotation = 0;
+    let spinning = false;
+
+    function remainingTime() {
+      const lastSpin = Number(localStorage.getItem(storageKey) || 0);
+      return Math.max(0, waitTime - (Date.now() - lastSpin));
+    }
+
+    function showCooldown() {
+      const remaining = remainingTime();
+
+      if (!remaining) {
+        spinButton.disabled = false;
+        status.textContent = "Tap SPIN to begin.";
+        return;
+      }
+
+      spinButton.disabled = true;
+      const hours = Math.floor(remaining / 3600000);
+      const minutes = Math.ceil((remaining % 3600000) / 60000);
+      status.textContent =
+        `Your daily spin was used. Come back in ${hours}h ${minutes}m.`;
+    }
+
+    spinButton.addEventListener("click", () => {
+      if (spinning || remainingTime()) {
+        showCooldown();
+        return;
+      }
+
+      spinning = true;
+      spinButton.disabled = true;
+      result.textContent = "Spinning...";
+      status.textContent = "Please wait for the wheel to stop.";
+
+      const random = new Uint32Array(1);
+      crypto.getRandomValues(random);
+      const prizeIndex = random[0] % prizes.length;
+
+      const extraTurns = 5 * 360;
+      const landingAngle = 360 - (prizeIndex * 60 + 30);
+      rotation += extraTurns + landingAngle;
+      wheel.style.transform = `rotate(${rotation}deg)`;
+
+      setTimeout(() => {
+        const prize = prizes[prizeIndex];
+        localStorage.setItem(storageKey, String(Date.now()));
+        result.textContent = `You landed on: ${prize}!`;
+
+        if (prize === "Bonus Spin") {
+          localStorage.removeItem(storageKey);
+          status.textContent =
+            "Bonus spin awarded! Tap SPIN again when ready.";
+          spinButton.disabled = false;
+        } else {
+          status.textContent =
+            "Save a screenshot of this result for manual verification.";
+        }
+
+        spinning = false;
+      }, 4200);
+    });
+
+    showCooldown();
   </script>
 </body>
 </html>
