@@ -1,244 +1,160 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#090414">
-  <title>Jackpot Spin</title>
-
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#10051f" />
+  <meta name="description" content="Spin the Jackpot Game Wheel and discover which game you will play next." />
+  <title>Jackpot Game Wheel</title>
   <style>
+    :root{--gold:#ffd84d;--orange:#f59a20;--ink:#090311;--panel:#180b2a;--muted:#c7b8d8}
     *{box-sizing:border-box}
-    body{
-      margin:0;
-      min-height:100vh;
-      padding:28px 16px;
-      font-family:system-ui,-apple-system,sans-serif;
-      color:#fff;
-      text-align:center;
-      background:radial-gradient(circle at top,#39146b,#090414 65%);
-    }
-    .app{width:min(520px,100%);margin:auto}
-    .tag{
-      display:inline-block;
-      padding:7px 14px;
-      border:1px solid #ffc83d;
-      border-radius:999px;
-      color:#ffc83d;
-      font-weight:800;
-    }
-    h1{
-      margin:14px 0 6px;
-      font-size:clamp(38px,10vw,64px);
-      color:#ffd54a;
-    }
-    .sub{color:#d5c9e8;line-height:1.5}
-    .stage{
-      position:relative;
-      width:min(390px,88vw);
-      margin:28px auto;
-    }
-    .pointer{
-      position:absolute;
-      z-index:5;
-      left:50%;
-      top:-20px;
-      transform:translateX(-50%);
-      width:0;
-      height:0;
-      border-left:18px solid transparent;
-      border-right:18px solid transparent;
-      border-top:36px solid #fff;
-    }
-    .wheel{
-      aspect-ratio:1;
-      border-radius:50%;
-      border:10px solid #ffc83d;
-      background:conic-gradient(
-        #ff4057 0 60deg,
-        #773ee8 60deg 120deg,
-        #00aee8 120deg 180deg,
-        #17b978 180deg 240deg,
-        #ff8c22 240deg 300deg,
-        #e63fb4 300deg 360deg
-      );
-      box-shadow:0 0 30px #ffc83d66;
-      transition:transform 4s cubic-bezier(.15,.75,.1,1);
-    }
-    .spin{
-      position:absolute;
-      z-index:6;
-      left:50%;
-      top:50%;
-      transform:translate(-50%,-50%);
-      width:105px;
-      height:105px;
-      border:7px solid #ffc83d;
-      border-radius:50%;
-      background:#160828;
-      color:#fff;
-      font-size:22px;
-      font-weight:900;
-      cursor:pointer;
-    }
-    .spin:disabled{opacity:.55;cursor:not-allowed}
-    .prizes{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:8px;
-      margin:18px 0;
-      text-align:left;
-    }
-    .prizes span{
-      padding:10px;
-      border:1px solid #69458e;
-      border-radius:10px;
-      background:#170b29;
-    }
-    .panel{
-      padding:20px;
-      border:1px solid #68458c;
-      border-radius:16px;
-      background:#13091fd9;
-    }
-    .result{
-      min-height:32px;
-      color:#ffd54a;
-      font-size:22px;
-      font-weight:900;
-    }
-    .status{color:#d5c9e8;line-height:1.5}
-    .notice{
-      margin-top:18px;
-      padding:14px;
-      border-left:4px solid #ffc83d;
-      border-radius:8px;
-      background:#241136;
-      color:#eadff7;
-      line-height:1.5;
-      text-align:left;
-    }
+    html,body{min-height:100%}
+    body{margin:0;color:#fff;font-family:ui-rounded,"Arial Rounded MT Bold",system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 50% 5%,#66208e 0,#26083f 35%,#090311 78%);padding:max(18px,env(safe-area-inset-top)) 14px max(28px,env(safe-area-inset-bottom));text-align:center}
+    button,a{font:inherit;touch-action:manipulation}
+    .app{width:min(760px,100%);margin:auto}
+    .tag{display:inline-block;padding:8px 14px;border:1px solid #c77cff;border-radius:999px;color:#f2dcff;background:#35104f;font-size:.8rem;font-weight:900;letter-spacing:.08em}
+    h1{margin:12px 0 4px;font-size:clamp(2.2rem,9vw,4.7rem);line-height:.98;letter-spacing:-.055em;background:linear-gradient(90deg,#fff27b,var(--orange),#ff58cd);-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 7px 15px #0007)}
+    .sub{margin:9px auto 17px;color:#ddd0e8;font-size:clamp(1rem,3.4vw,1.15rem)}
+    .stage{position:relative;width:min(475px,92vw);margin:auto;padding-top:8px}
+    .pointer{position:absolute;z-index:8;left:50%;top:-2px;transform:translateX(-50%);width:0;height:0;border-left:23px solid transparent;border-right:23px solid transparent;border-top:52px solid #fff281;filter:drop-shadow(0 4px 4px #000)}
+    .wheel{position:relative;overflow:hidden;aspect-ratio:1;border:11px solid var(--gold);border-radius:50%;background:conic-gradient(#f04491 0 90deg,#6436da 90deg 180deg,#f39b20 180deg 270deg,#147ddb 270deg);box-shadow:0 0 0 5px #984d00,0 0 46px #db3aff8c,inset 0 0 28px #0008;transition:transform 4.4s cubic-bezier(.1,.68,.06,1)}
+    .label{position:absolute;left:50%;top:50%;display:flex;align-items:center;justify-content:flex-end;width:45%;height:54px;padding-right:18px;transform-origin:0 50%;font-size:clamp(.78rem,3vw,1.08rem);font-weight:1000;line-height:1.05;text-align:right;text-shadow:0 2px 4px #000}
+    .label:nth-child(1){transform:rotate(45deg) translateY(-50%)}
+    .label:nth-child(2){transform:rotate(135deg) translateY(-50%)}
+    .label:nth-child(3){transform:rotate(225deg) translateY(-50%)}
+    .label:nth-child(4){transform:rotate(315deg) translateY(-50%)}
+    .hub{position:absolute;z-index:6;left:50%;top:50%;display:grid;place-items:center;width:28%;aspect-ratio:1;transform:translate(-50%,-50%);border:7px solid #fff;border-radius:50%;color:#481600;background:linear-gradient(#fff486,#ee8b08);box-shadow:0 5px 22px #0009;font-size:clamp(1rem,4vw,1.55rem);font-weight:1000;cursor:pointer}
+    .hub:disabled{cursor:wait;filter:saturate(.55)}
+    .panel{margin:22px auto 0;padding:18px;border:1px solid #674183;border-radius:20px;background:rgba(20,8,34,.9);box-shadow:0 18px 48px #0008}
+    .status{margin:0;color:var(--muted);font-size:1rem;line-height:1.45}
+    .result{display:none;margin:0;padding:18px;border:1px solid #c55eff;border-radius:15px;background:#2a1041}
+    .result.show{display:block}
+    .result small{display:block;color:#ddc8ed;font-size:.82rem;font-weight:850;letter-spacing:.07em;text-transform:uppercase}
+    .result strong{display:block;margin:6px 0 5px;color:#fff086;font-size:clamp(1.5rem,5vw,2.1rem)}
+    .result p{margin:0;color:#d7c9e4;line-height:1.4}
+    .play{display:none;align-items:center;justify-content:center;width:100%;min-height:58px;margin-top:13px;border:0;border-radius:14px;color:#201200;background:linear-gradient(#fff17a,var(--gold));box-shadow:0 6px 0 #cf7600;font-size:1.08rem;font-weight:1000;text-decoration:none}
+    .play.show{display:flex}
+    .play:active{transform:translateY(3px);box-shadow:0 3px 0 #cf7600}
+    .again{display:none;width:100%;min-height:50px;margin-top:14px;border:2px solid #694d81;border-radius:13px;color:#fff;background:transparent;font-weight:900;cursor:pointer}
+    .again.show{display:block}
+    .games{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:16px}
+    .game-chip{padding:10px 8px;border:1px solid #51356b;border-radius:11px;color:#cab9d9;background:#130821;font-size:.82rem;font-weight:850}
+    .rules{margin:16px 0 0;color:#a998b8;font-size:.8rem;line-height:1.45}
+    .spark{position:fixed;z-index:20;pointer-events:none;font-size:24px;animation:fall 1.25s linear forwards}
+    @keyframes fall{to{transform:translateY(260px) rotate(300deg);opacity:0}}
+    @media(max-width:430px){body{padding-inline:9px}.panel{padding:14px}.wheel{border-width:9px}.label{padding-right:12px}.games{grid-template-columns:1fr 1fr}}
+    @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}.wheel{transition-duration:.01ms}}
   </style>
 </head>
-
 <body>
   <main class="app">
-    <span class="tag">MANUAL BETA</span>
-    <h1>JACKPOT SPIN</h1>
-    <p class="sub">
-      One free spin every 24 hours on this device.
-      Spin for a chance to receive tokens, an NFT, or a bonus spin.
-    </p>
+    <span class="tag">GAME PICKER</span>
+    <h1>JACKPOT WHEEL</h1>
+    <p class="sub">Spin the wheel and play the game it chooses.</p>
 
-    <section class="stage">
-      <div class="pointer"></div>
-      <div class="wheel" id="wheel"></div>
-      <button class="spin" id="spin" type="button">SPIN</button>
-    </section>
-
-    <section class="prizes">
-      <span>🪙 10 Tokens</span>
-      <span>🖼️ NFT Reward</span>
-      <span>🪙 25 Tokens</span>
-      <span>🔁 Try Again</span>
-      <span>💰 50 Tokens</span>
-      <span>🎟️ Bonus Spin</span>
+    <section class="stage" aria-label="Jackpot game wheel">
+      <div class="pointer" aria-hidden="true"></div>
+      <div class="wheel" id="wheel">
+        <div class="label">FIND THE<br>CHAIN CAT</div>
+        <div class="label">EMAIL<br>EXPRESS</div>
+        <div class="label">MATCH<br>CARDS</div>
+        <div class="label">JACKPOT<br>SLOTS</div>
+      </div>
+      <button class="hub" id="spin" type="button">SPIN</button>
     </section>
 
     <section class="panel">
-      <div class="result" id="result">Ready for your free spin!</div>
-      <p class="status" id="status">Tap SPIN to begin.</p>
-
-      <div class="notice">
-        <strong>Beta notice:</strong> Results are requests pending manual
-        verification. Rewards are not transferred automatically and depend on
-        eligibility and available promotional funding. Never send payment or
-        share your recovery phrase.
+      <p class="status" id="status">Tap SPIN to choose today’s game.</p>
+      <div class="result" id="result">
+        <small>The wheel picked</small>
+        <strong id="gameName"></strong>
+        <p id="gameDescription"></p>
       </div>
+      <a class="play" id="play" href="#">PLAY GAME ▶</a>
+      <button class="again" id="again" type="button">Spin Again</button>
     </section>
+
+    <div class="games" aria-label="Games on the wheel">
+      <div class="game-chip">🔎 Find the Chain Cat</div>
+      <div class="game-chip">✉️ Email Express</div>
+      <div class="game-chip">🃏 Match Cards</div>
+      <div class="game-chip">🎰 Jackpot Slots</div>
+    </div>
+    <p class="rules">Games and points are for entertainment only. Points have no cash value and cannot be exchanged for money, tokens, NFTs, or prizes.</p>
   </main>
 
   <script>
-    const prizes = [
-      "10 Tokens",
-      "NFT Reward",
-      "25 Tokens",
-      "Try Again",
-      "50 Tokens",
-      "Bonus Spin"
-    ];
+    (()=>{
+      const games=[
+        {name:'Find the Chain Cat',url:'chaincats-hidden.html',description:'Search the busy picture and find the hidden Chain Cat.'},
+        {name:'Email Express',url:'email-express.html',description:'Carry an invitation past the obstacles and deliver it to the mailbox.'},
+        {name:'Match Cards',url:'cards.html',description:'Flip the cards and find every matching pair.'},
+        {name:'Jackpot Slots',url:'slots.html',description:'Spin the reels and try to line up the symbols.'}
+      ];
+      const wheel=document.getElementById('wheel');
+      const spin=document.getElementById('spin');
+      const again=document.getElementById('again');
+      const status=document.getElementById('status');
+      const result=document.getElementById('result');
+      const gameName=document.getElementById('gameName');
+      const gameDescription=document.getElementById('gameDescription');
+      const play=document.getElementById('play');
+      let rotation=0;
+      let spinning=false;
 
-    const wheel = document.getElementById("wheel");
-    const spinButton = document.getElementById("spin");
-    const result = document.getElementById("result");
-    const status = document.getElementById("status");
-    const storageKey = "jackpotSpinLastTime";
-    const waitTime = 24 * 60 * 60 * 1000;
-    let rotation = 0;
-    let spinning = false;
+      spin.addEventListener('click',spinWheel);
+      again.addEventListener('click',resetWheel);
 
-    function remainingTime() {
-      const lastSpin = Number(localStorage.getItem(storageKey) || 0);
-      return Math.max(0, waitTime - (Date.now() - lastSpin));
-    }
-
-    function showCooldown() {
-      const remaining = remainingTime();
-
-      if (!remaining) {
-        spinButton.disabled = false;
-        status.textContent = "Tap SPIN to begin.";
-        return;
+      function spinWheel(){
+        if(spinning)return;
+        spinning=true;
+        spin.disabled=true;
+        result.classList.remove('show');
+        play.classList.remove('show');
+        again.classList.remove('show');
+        status.style.display='block';
+        status.textContent='The wheel is choosing your game…';
+        const pick=Math.floor(Math.random()*games.length);
+        const center=pick*90+45;
+        const current=((rotation%360)+360)%360;
+        const target=(360-center+360)%360;
+        const extra=(target-current+360)%360;
+        rotation+=360*6+extra;
+        wheel.style.transform=`rotate(${rotation}deg)`;
+        window.setTimeout(()=>showResult(games[pick]),4450);
       }
 
-      spinButton.disabled = true;
-      result.textContent = "Today's spin is complete.";
-      const totalMinutes = Math.ceil(remaining / 60000);
-const hours = Math.floor(totalMinutes / 60);
-const minutes = totalMinutes % 60;
-      status.textContent =
-        `Your daily spin was used. Come back in ${hours}h ${minutes}m.`;
-    }
-
-    spinButton.addEventListener("click", () => {
-      if (spinning || remainingTime()) {
-        showCooldown();
-        return;
-      }
-
-      spinning = true;
-      spinButton.disabled = true;
-      result.textContent = "Spinning...";
-      status.textContent = "Please wait for the wheel to stop.";
-
-      const random = new Uint32Array(1);
-      crypto.getRandomValues(random);
-      const prizeIndex = random[0] % prizes.length;
-
-      const extraTurns = 5 * 360;
-      const landingAngle = 360 - (prizeIndex * 60 + 30);
-      rotation += extraTurns + landingAngle;
-      wheel.style.transform = `rotate(${rotation}deg)`;
-
-      setTimeout(() => {
-        const prize = prizes[prizeIndex];
-        localStorage.setItem(storageKey, String(Date.now()));
-        result.textContent = `You landed on: ${prize}!`;
-
-        if (prize === "Bonus Spin") {
-          localStorage.removeItem(storageKey);
-          status.textContent =
-            "Bonus spin awarded! Tap SPIN again when ready.";
-          spinButton.disabled = false;
-        } else {
-          status.textContent =
-            "Save a screenshot of this result for manual verification.";
+      function showResult(game){
+        spinning=false;
+        spin.disabled=false;
+        status.style.display='none';
+        gameName.textContent=game.name;
+        gameDescription.textContent=game.description;
+        play.href=game.url;
+        play.textContent=`PLAY ${game.name.toUpperCase()} ▶`;
+        result.classList.add('show');
+        play.classList.add('show');
+        again.classList.add('show');
+        for(let i=0;i<18;i+=1){
+          const spark=document.createElement('span');
+          spark.className='spark';
+          spark.textContent=['✨','🎮','⭐'][i%3];
+          spark.style.left=Math.random()*100+'vw';
+          spark.style.top=Math.random()*38+'vh';
+          document.body.appendChild(spark);
+          window.setTimeout(()=>spark.remove(),1300);
         }
+      }
 
-        spinning = false;
-      }, 4200);
-    });
-
-    showCooldown();
+      function resetWheel(){
+        result.classList.remove('show');
+        play.classList.remove('show');
+        again.classList.remove('show');
+        status.style.display='block';
+        status.textContent='Tap SPIN to choose another game.';
+      }
+    })();
   </script>
 </body>
 </html>
