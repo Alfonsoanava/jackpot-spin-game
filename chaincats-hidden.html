@@ -4,5 +4,16 @@
 const frame=document.getElementById('frame'),cover=document.getElementById('cover'),start=document.getElementById('start'),target=document.getElementById('target'),message=document.getElementById('message'),timeEl=document.getElementById('time'),wrongEl=document.getElementById('wrongCount'),bestEl=document.getElementById('best');let time=60,wrong=0,running=false,timer;const saved=Number(localStorage.getItem('chainCatsHiddenBest')||0);if(saved)bestEl.textContent=saved+'s';
 function begin(){clearInterval(timer);frame.querySelectorAll('.wrong,.found').forEach(x=>x.remove());time=60;wrong=0;running=true;timeEl.textContent=time;wrongEl.textContent=wrong;cover.classList.add('hide');message.textContent='Search the whole picture—where is the Chain Cat?';timer=setInterval(()=>{time--;timeEl.textContent=time;if(time<=0)finish(false)},1000)}
 function finish(won){clearInterval(timer);running=false;if(won){const used=60-time,old=Number(localStorage.getItem('chainCatsHiddenBest')||0);if(!old||used<old){localStorage.setItem('chainCatsHiddenBest',used);bestEl.textContent=used+'s'}const ring=document.createElement('span');ring.className='found';frame.appendChild(ring);message.textContent=`🎉 You found the Chain Cat in ${used} seconds with ${wrong} wrong tap${wrong===1?'':'s'}!`;document.getElementById('coverTitle').textContent='You found your buddy!';document.getElementById('coverText').textContent='Great eyes! Play again whenever you are ready.'}else{message.textContent='Time is up! Use a hint and try again.';document.getElementById('coverTitle').textContent='Time is up!';document.getElementById('coverText').textContent='The Chain Cat was hiding in the upper-right area.'}start.textContent='PLAY AGAIN';cover.classList.remove('hide')}
+  const catScoreObserver=new MutationObserver(()=>{
+  if(message.textContent.startsWith('🎉')&&!message.textContent.includes('Jackpot Points')){
+    const earned=100;
+    const catTotal=Number(localStorage.getItem('chainCatsPoints'))||0;
+    const jackpotTotal=Number(localStorage.getItem('jackpotTotalPoints'))||0;
+    localStorage.setItem('chainCatsPoints',String(catTotal+earned));
+    localStorage.setItem('jackpotTotalPoints',String(jackpotTotal+earned));
+    message.textContent+=` You earned ${earned} Jackpot Points!`;
+  }
+});
+catScoreObserver.observe(message,{childList:true,characterData:true,subtree:true});
 start.onclick=begin;document.getElementById('again').onclick=begin;target.onclick=e=>{e.stopPropagation();if(running)finish(true)};frame.onclick=e=>{if(!running||e.target===target)return;wrong++;wrongEl.textContent=wrong;message.textContent=wrong<3?'Not there—keep looking!':'Look carefully around balconies and flowers.';const r=frame.getBoundingClientRect(),mark=document.createElement('span');mark.className='wrong';mark.style.left=(e.clientX-r.left)+'px';mark.style.top=(e.clientY-r.top)+'px';frame.appendChild(mark);setTimeout(()=>mark.remove(),800)};document.getElementById('hint').onclick=()=>{if(!running){message.textContent='Start the search first.';return}message.textContent=wrong<2?'Hint: your buddy is above street level.':'Strong hint: check the upper-right balconies near red flowers.'};
 </script></body></html>
