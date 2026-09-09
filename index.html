@@ -118,7 +118,7 @@
         const pick=Math.floor(Math.random()*games.length);
         const center=pick*90+45;
         const current=((rotation%360)+360)%360;
-        const target=(360-center+360)%360;
+        const target=(270-center+360)%360;
         const extra=(target-current+360)%360;
         rotation+=360*6+extra;
         wheel.style.transform=`rotate(${rotation}deg)`;
