@@ -8,5 +8,16 @@ function paint(){document.getElementById('kept').textContent=`${kept}/52`;docume
 function deal(){board.innerHTML='';first=second=null;locked=false;round++;const pairs=pairDeck.splice(0,6),cards=shuffle(pairs.flat());cards.forEach((c,i)=>{const b=document.createElement('button');b.className='card';b.dataset.rank=c.rank;b.innerHTML=`<span class="inner"><span class="face back">★</span><span class="face front ${c.suit==='♥'||c.suit==='♦'?'red':''}">${c.rank}${c.suit}</span></span>`;b.onclick=()=>flip(b);board.appendChild(b)});message.textContent=`Round ${round}: find ${pairs.length} matching pairs!`;paint()}
 function flip(card){if(!running||locked||card===first||card.classList.contains('matched'))return;card.classList.add('flipped');if(!first){first=card;return}second=card;moves++;locked=true;paint();if(first.dataset.rank===second.dataset.rank){setTimeout(()=>{first.classList.add('matched');second.classList.add('matched');kept+=2;message.textContent=`Matched two ${first.dataset.rank}s—keep them!`;first=second=null;locked=false;paint();if(!board.querySelector('.card:not(.matched)'))setTimeout(nextRound,650)},450)}else setTimeout(()=>{first.classList.remove('flipped');second.classList.remove('flipped');message.textContent='No match—try again!';first=second=null;locked=false},850)}
 function nextRound(){if(pairDeck.length)deal();else{running=false;clearInterval(timer);message.textContent=`🎉 You kept all 52 cards in ${moves} moves!`;start.textContent='PLAY AGAIN';start.disabled=false}}
+  const scoreObserver=new MutationObserver(()=>{
+  if(message.textContent.startsWith('🎉')&&!message.textContent.includes('Jackpot Points')){
+    const earned=100;
+    const cardTotal=Number(localStorage.getItem('matchCardsPoints'))||0;
+    const jackpotTotal=Number(localStorage.getItem('jackpotTotalPoints'))||0;
+    localStorage.setItem('matchCardsPoints',String(cardTotal+earned));
+    localStorage.setItem('jackpotTotalPoints',String(jackpotTotal+earned));
+    message.textContent+=` You earned ${earned} Jackpot Points!`;
+  }
+});
+scoreObserver.observe(message,{childList:true,characterData:true,subtree:true});
 start.onclick=()=>{clearInterval(timer);makeDeck();moves=kept=round=seconds=0;running=true;start.disabled=true;start.textContent='GAME RUNNING';deal();timer=setInterval(()=>{seconds++;paint()},1000)};paint();
 </script></body></html>
