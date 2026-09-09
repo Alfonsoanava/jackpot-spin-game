@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#090414">
+  <title>Jackpot Spin Slots</title>
+  <style>
+    *{box-sizing:border-box}
+    :root{--gold:#ffd54a;--purple:#8b4dff;--panel:#160b27;--muted:#d8cceb}
+    body{margin:0;min-height:100vh;padding:24px 14px 40px;font-family:system-ui,-apple-system,sans-serif;color:#fff;text-align:center;background:radial-gradient(circle at top,#531b7b 0,#1b092e 35%,#08030f 78%)}
+    .app{width:min(560px,100%);margin:auto}
+    .tag{display:inline-block;padding:7px 14px;border:1px solid var(--gold);border-radius:999px;color:var(--gold);font-weight:900;letter-spacing:.08em}
+    h1{margin:12px 0 4px;font-size:clamp(38px,10vw,64px);line-height:1;color:var(--gold);text-shadow:0 3px 0 #a15c00,0 0 26px #ffd54a66}
+    .sub{margin:10px auto 18px;color:var(--muted);line-height:1.45}
+    .topbar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+    .meter{padding:12px;border:1px solid #70459a;border-radius:14px;background:#160b27cc}
+    .meter small{display:block;color:#bcaad4;font-weight:700}
+    .meter strong{display:block;margin-top:2px;color:var(--gold);font-size:24px}
+    .machine{position:relative;padding:22px 16px 18px;border:4px solid var(--gold);border-radius:26px;background:linear-gradient(145deg,#471168,#1a082b 55%,#360e51);box-shadow:0 0 34px #ffc83d55,inset 0 0 20px #0008}
+    .lights{height:10px;margin:-8px 10px 15px;border-radius:20px;background:repeating-linear-gradient(90deg,#fff 0 8px,#ff4d8d 8px 16px,#ffd54a 16px 24px);box-shadow:0 0 12px #fff;animation:flash .8s linear infinite}
+    @keyframes flash{50%{filter:hue-rotate(90deg);opacity:.7}}
+    .reels{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:12px;border:3px solid #ae73ff;border-radius:18px;background:#07020d}
+    .reel{display:grid;place-items:center;aspect-ratio:.8;border:3px solid #e5d5ff;border-radius:14px;background:linear-gradient(#fff,#efe7ff);color:#161022;font-size:clamp(52px,15vw,86px);box-shadow:inset 0 0 18px #8c63ad66;overflow:hidden}
+    .reel.spinning span{animation:bounce .13s linear infinite}
+    @keyframes bounce{50%{transform:translateY(12px) scale(.9);filter:blur(2px)}}
+    .message{min-height:64px;display:grid;place-items:center;margin:16px 4px 10px;padding:10px;border-radius:12px;background:#08030e99;color:var(--gold);font-size:21px;font-weight:900}
+    .controls{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:9px;align-items:stretch}
+    button{min-height:54px;border:0;border-radius:14px;font:inherit;font-weight:900;cursor:pointer;touch-action:manipulation}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    .side{background:#2d1944;color:#fff;border:1px solid #7c55a2}
+    .spin{background:linear-gradient(#ffe06a,#ffad18);color:#291100;font-size:21px;box-shadow:0 5px 0 #a55d00}
+    .spin:active{transform:translateY(3px);box-shadow:0 2px 0 #a55d00}
+    .paytable{margin-top:18px;padding:17px;border:1px solid #70459a;border-radius:16px;background:#13091fd9;text-align:left}
+    .paytable h2{margin:0 0 10px;text-align:center;color:var(--gold)}
+    .payouts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .payouts span{padding:9px;border-radius:9px;background:#251139;color:#eee3fa}
+    .notice{margin-top:16px;color:#a998be;font-size:13px;line-height:1.4}
+    .win{animation:winGlow .45s ease-in-out 4}
+    @keyframes winGlow{50%{box-shadow:0 0 55px #ffd54a, inset 0 0 25px #ffd54a88}}
+    @media(max-width:410px){.controls{grid-template-columns:1fr 1.3fr 1fr}.side{font-size:13px}.payouts{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <span class="tag">FREE-PLAY BETA</span>
+    <h1>JACKPOT SLOTS</h1>
+    <p class="sub">Spin three reels and build your play-coin balance. Match three symbols to win big!</p>
+
+    <section class="topbar" aria-label="Game balance">
+      <div class="meter"><small>PLAY COINS</small><strong id="balance">100</strong></div>
+      <div class="meter"><small>CURRENT BET</small><strong id="bet">5</strong></div>
+    </section>
+
+    <section class="machine" id="machine">
+      <div class="lights"></div>
+      <div class="reels" aria-live="polite">
+        <div class="reel"><span id="r1">🍒</span></div>
+        <div class="reel"><span id="r2">⭐</span></div>
+        <div class="reel"><span id="r3">💎</span></div>
+      </div>
+      <div class="message" id="message">Press SPIN to play!</div>
+      <div class="controls">
+        <button class="side" id="betButton" type="button">BET +5</button>
+        <button class="spin" id="spinButton" type="button">🎰 SPIN</button>
+        <button class="side" id="resetButton" type="button">RESET</button>
+      </div>
+    </section>
+
+    <section class="paytable">
+      <h2>Paytable</h2>
+      <div class="payouts">
+        <span>7️⃣ 7️⃣ 7️⃣ — Jackpot ×25</span>
+        <span>💎 💎 💎 — Win ×15</span>
+        <span>⭐ ⭐ ⭐ — Win ×10</span>
+        <span>🔔 🔔 🔔 — Win ×8</span>
+        <span>🍋 🍋 🍋 — Win ×6</span>
+        <span>🍒 🍒 🍒 — Win ×5</span>
+        <span>Any two matching — Win ×2</span>
+        <span>Every spin costs your selected bet</span>
+      </div>
+    </section>
+    <p class="notice">Entertainment only. Play coins have no cash value, cannot be purchased, and cannot be exchanged for tokens, NFTs, money, or prizes.</p>
+  </main>
+
+  <script>
+    const symbols = ["🍒","🍋","🔔","⭐","💎","7️⃣"];
+    const tripleMultipliers = {"🍒":5,"🍋":6,"🔔":8,"⭐":10,"💎":15,"7️⃣":25};
+    const reelEls = [document.getElementById("r1"),document.getElementById("r2"),document.getElementById("r3")];
+    const reelBoxes = [...document.querySelectorAll(".reel")];
+    const balanceEl = document.getElementById("balance");
+    const betEl = document.getElementById("bet");
+    const messageEl = document.getElementById("message");
+    const spinButton = document.getElementById("spinButton");
+    const betButton = document.getElementById("betButton");
+    const resetButton = document.getElementById("resetButton");
+    const machine = document.getElementById("machine");
+    let balance = Number(localStorage.getItem("jackpotSlotsBalance") || 100);
+    let bet = 5;
+    let spinning = false;
+
+    function randomSymbol(){
+      const n = new Uint32Array(1);
+      crypto.getRandomValues(n);
+      return symbols[n[0] % symbols.length];
+    }
+    function save(){localStorage.setItem("jackpotSlotsBalance",String(balance))}
+    function paint(){balanceEl.textContent=balance;betEl.textContent=bet;spinButton.disabled=spinning||balance<bet}
+
+    betButton.addEventListener("click",()=>{
+      if(spinning)return;
+      bet = bet===5 ? 10 : bet===10 ? 20 : 5;
+      betButton.textContent = bet===20 ? "BET → 5" : `BET +${bet===5?5:10}`;
+      messageEl.textContent=`Bet set to ${bet} play coins.`;
+      paint();
+    });
+
+    spinButton.addEventListener("click",()=>{
+      if(spinning||balance<bet)return;
+      spinning=true;balance-=bet;save();paint();
+      machine.classList.remove("win");
+      messageEl.textContent="Spinning…";
+      reelBoxes.forEach(x=>x.classList.add("spinning"));
+      const timers=reelEls.map((el,i)=>setInterval(()=>el.textContent=randomSymbol(),75+i*12));
+      const final=[randomSymbol(),randomSymbol(),randomSymbol()];
+      reelEls.forEach((el,i)=>setTimeout(()=>{
+        clearInterval(timers[i]);el.textContent=final[i];reelBoxes[i].classList.remove("spinning");
+        if(i===2)finish(final);
+      },900+i*450));
+    });
+
+    function finish(final){
+      let multiplier=0;
+      if(final[0]===final[1]&&final[1]===final[2]) multiplier=tripleMultipliers[final[0]];
+      else if(final[0]===final[1]||final[0]===final[2]||final[1]===final[2]) multiplier=2;
+      const won=bet*multiplier;
+      if(won){
+        balance+=won;machine.classList.add("win");
+        messageEl.textContent=multiplier===25?`🎉 JACKPOT! You won ${won} play coins!`:`You won ${won} play coins!`;
+      }else{
+        messageEl.textContent=balance<bet?"Out of play coins—tap RESET for 100 more.":"No match. Spin again!";
+      }
+      spinning=false;save();paint();
+    }
+
+    resetButton.addEventListener("click",()=>{
+      if(spinning)return;
+      balance=100;bet=5;save();messageEl.textContent="Fresh 100 play coins—good luck!";paint();
+    });
+    paint();
+  </script>
+</body>
+</html>
