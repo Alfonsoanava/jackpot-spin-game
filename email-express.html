@@ -868,9 +868,13 @@
         if (!run || !run.reached) return;
         const speedBonus = Math.max(0, 60 - Math.floor(run.elapsed));
         pointsToPass = Math.min(500, 100 + run.hearts * 25 + speedBonus + Math.max(0, 30 - run.jumps));
-        const oldTotal = Number(localStorage.getItem('emailExpressPoints')) || 0;
-        const collected = giftPoints;
-        localStorage.setItem('emailExpressPoints', String(oldTotal + collected));
+        const collected = giftPoints || pointsToPass;
+const oldTotal = Number(localStorage.getItem('emailExpressPoints')) || 0;
+const jackpotTotal = Number(localStorage.getItem('jackpotTotalPoints')) || 0;
+localStorage.setItem('emailExpressPoints', String(oldTotal + collected));
+localStorage.setItem('jackpotTotalPoints', String(jackpotTotal + collected));
+        
+
         document.getElementById('resultSummary').innerHTML =
           `<strong>${collected} points collected</strong><br>${pointsToPass} new GG Play Points ready for the next player`;
         document.getElementById('successMessage').textContent = 'The letter is safely inside. Choose the next player and keep the invitation moving.';
