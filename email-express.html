@@ -389,22 +389,23 @@
 
     .mailman {
       position: absolute;
-      left: 14%;
+      left: 9%;
       bottom: 23%;
       z-index: 5;
       font-size: clamp(3.2rem, 13vw, 5.4rem);
       line-height: 1;
       filter: drop-shadow(0 5px 3px rgba(0,0,0,.3));
       transform-origin: 50% 100%;
+      transition: left .12s linear;
     }
 
     .mailman.running { animation: step .34s ease-in-out infinite alternate; }
-    .mailman.jumping { animation: jump .72s cubic-bezier(.2,.75,.35,1); }
+    .mailman.jumping { animation: jump 1s cubic-bezier(.18,.72,.3,1); }
 
     @keyframes step { from { transform: rotate(-3deg) translateY(0); } to { transform: rotate(3deg) translateY(-3px); } }
     @keyframes jump {
       0%, 100% { transform: translateY(0) rotate(0); }
-      45%, 55% { transform: translateY(-118px) rotate(-4deg); }
+      38%, 62% { transform: translateY(-155px) rotate(-4deg); }
     }
 
     .obstacle {
@@ -412,7 +413,7 @@
       right: -90px;
       bottom: 23%;
       z-index: 4;
-      font-size: clamp(2.8rem, 11vw, 4.5rem);
+      font-size: clamp(1.9rem, 7vw, 3rem);
       line-height: 1;
       filter: drop-shadow(0 4px 2px rgba(0,0,0,.28));
     }
@@ -766,6 +767,7 @@
           reached: false
         };
         jumping = false;
+        mailman.style.left = '9%';
         mailman.className = 'mailman running';
         runnerMessage.classList.remove('show');
         mailboxButton.classList.remove('show');
@@ -774,7 +776,7 @@
         updateGameMeters();
         show(screens.game);
         spawnObstacle();
-        spawnTimer = window.setInterval(spawnObstacle, 1900);
+        spawnTimer = window.setInterval(spawnObstacle, 2600);
         secondTimer = window.setInterval(updateGameMeters, 250);
         animationFrame = requestAnimationFrame(gameLoop);
       }
@@ -786,12 +788,13 @@
         run.elapsed = (now - run.started) / 1000;
         const progress = Math.min(run.elapsed / courseSeconds, 1);
         progressBar.style.width = `${progress * 100}%`;
+        mailman.style.left = `${9 + progress * 19}%`;
 
         if (progress >= .84) clearInterval(spawnTimer);
 
         const playerBox = mailman.getBoundingClientRect();
         obstacles.forEach((item) => {
-          item.x -= 220 * dt;
+          item.x -= 150 * dt;
           item.el.style.transform = `translateX(${item.x}px)`;
           const box = item.el.getBoundingClientRect();
           if (!item.hit && overlaps(playerBox, box)) {
@@ -819,7 +822,7 @@
         el.textContent = dog ? '🐕' : '🪵';
         el.setAttribute('aria-label', dog ? 'dog obstacle' : 'log obstacle');
         runner.appendChild(el);
-        obstacles.push({ el, x: runner.clientWidth + 100, hit: false });
+        obstacles.push({ el, x: Math.max(110, runner.clientWidth * .42), hit: false });
       }
 
       function jump() {
@@ -831,7 +834,7 @@
         window.setTimeout(() => {
           jumping = false;
           if (run && run.running) mailman.className = 'mailman running';
-        }, 720);
+        }, 1000);
       }
 
       function failRoute() {
@@ -904,9 +907,9 @@
       }
 
       function overlaps(a, b) {
-        const padX = 18;
-        const padY = 12;
-        return a.left + padX < b.right - padX && a.right - padX > b.left + padX && a.top + padY < b.bottom && a.bottom > b.top + padY;
+        const horizontalHit = a.left + 32 < b.right - 16 && a.right - 32 > b.left + 16;
+        const feetAreLow = a.bottom - 22 > b.top + 16;
+        return horizontalHit && feetAreLow;
       }
 
       function show(screen) {
