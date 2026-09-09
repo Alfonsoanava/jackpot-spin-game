@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1830" />
+  <meta name="description" content="Email Express: play a quick delivery game, then pass one real email to a friend." />
+  <title>Email Express: Pass It On</title>
+  <style>
+    :root {
+      --night: #071326;
+      --navy: #0d2241;
+      --blue: #1675dc;
+      --sky: #70c6ff;
+      --paper: #fffdf7;
+      --ink: #172033;
+      --yellow: #ffd54a;
+      --orange: #ff9f1c;
+      --green: #25b46b;
+      --red: #e04b4b;
+      --muted: #a9bad1;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      color: white;
+      font-family: ui-rounded, "Arial Rounded MT Bold", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(58, 153, 255, .25), transparent 34rem),
+        linear-gradient(155deg, var(--night), #102a50 62%, #0b1830);
+    }
+
+    button, input { font: inherit; }
+
+    button { touch-action: manipulation; }
+
+    .shell {
+      width: min(100%, 760px);
+      margin: 0 auto;
+      padding: max(18px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .stamp {
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      flex: 0 0 52px;
+      border: 3px dashed rgba(255,255,255,.82);
+      border-radius: 14px;
+      background: var(--blue);
+      font-size: 29px;
+      transform: rotate(-4deg);
+      box-shadow: 0 8px 20px rgba(0,0,0,.22);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.45rem, 5.4vw, 2.15rem);
+      letter-spacing: -.035em;
+      line-height: 1;
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--sky);
+      font-size: .93rem;
+      font-weight: 800;
+    }
+
+    .status-pill {
+      padding: 8px 11px;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 999px;
+      color: #dceaff;
+      background: rgba(4,15,31,.46);
+      font-size: .78rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .panel {
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.17);
+      border-radius: 24px;
+      background: rgba(8, 24, 48, .86);
+      box-shadow: 0 24px 60px rgba(0,0,0,.3);
+      backdrop-filter: blur(10px);
+    }
+
+    .screen { display: none; padding: 22px; }
+    .screen.active { display: block; }
+
+    .letter-card {
+      position: relative;
+      margin-bottom: 20px;
+      padding: 22px;
+      border-radius: 18px;
+      color: var(--ink);
+      background: var(--paper);
+      box-shadow: 0 11px 26px rgba(0,0,0,.18);
+    }
+
+    .letter-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border: 9px solid transparent;
+      border-image: repeating-linear-gradient(45deg, var(--blue) 0 12px, white 12px 24px, var(--red) 24px 36px, white 36px 48px) 9;
+      border-radius: 18px;
+      opacity: .85;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      font-size: clamp(1.35rem, 5vw, 1.9rem);
+      line-height: 1.12;
+      letter-spacing: -.025em;
+    }
+
+    .letter-card p { margin: 0; color: #4d5b70; line-height: 1.5; }
+
+    .field { margin: 15px 0; }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: #dbeaff;
+      font-size: .93rem;
+      font-weight: 800;
+    }
+
+    input[type="text"], input[type="email"] {
+      width: 100%;
+      min-height: 52px;
+      padding: 12px 14px;
+      border: 2px solid #385573;
+      border-radius: 13px;
+      outline: none;
+      color: white;
+      background: #091a31;
+      font-size: 1rem;
+    }
+
+    input:focus { border-color: var(--sky); box-shadow: 0 0 0 3px rgba(112,198,255,.16); }
+
+    .check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin: 17px 0;
+      color: #c8d8eb;
+      line-height: 1.42;
+    }
+
+    .check-row input { width: 21px; height: 21px; margin: 1px 0 0; accent-color: var(--green); }
+
+    .primary, .secondary, .mail-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 54px;
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 14px;
+      font-weight: 950;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .primary, .mail-button {
+      color: #1a1d25;
+      background: linear-gradient(180deg, #ffe16e, var(--yellow));
+      box-shadow: 0 6px 0 #d88a0e, 0 11px 22px rgba(0,0,0,.2);
+    }
+
+    .primary:active, .mail-button:active { transform: translateY(3px); box-shadow: 0 3px 0 #d88a0e; }
+
+    .secondary {
+      margin-top: 12px;
+      border: 2px solid #466582;
+      color: white;
+      background: transparent;
+    }
+
+    .privacy {
+      margin: 20px 2px 0;
+      color: var(--muted);
+      font-size: .86rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .error {
+      min-height: 22px;
+      margin: 0 0 8px;
+      color: #ff9d9d;
+      font-weight: 750;
+    }
+
+    .game-head {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .meter {
+      padding: 10px 8px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.08);
+      text-align: center;
+    }
+
+    .meter span { display: block; color: var(--muted); font-size: .72rem; font-weight: 800; text-transform: uppercase; }
+    .meter strong { display: block; margin-top: 2px; font-size: 1.15rem; }
+
+    .route-note {
+      margin: 0 0 13px;
+      color: #d8e9ff;
+      font-size: .95rem;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .board-wrap {
+      padding: 9px;
+      border-radius: 20px;
+      background: #29445a;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.1);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+      aspect-ratio: 1;
+    }
+
+    .tile {
+      position: relative;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: #365b72;
+      font-size: clamp(1.15rem, 7vw, 2.35rem);
+      user-select: none;
+    }
+
+    .tile:nth-child(odd) { background: #3a647d; }
+    .tile.road { background: #61717b; }
+    .tile.road::after {
+      content: "";
+      position: absolute;
+      width: 35%;
+      height: 4px;
+      border-radius: 3px;
+      background: #f7d45a;
+      opacity: .75;
+    }
+
+    .piece { position: relative; z-index: 2; filter: drop-shadow(0 3px 2px rgba(0,0,0,.3)); }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, 68px);
+      justify-content: center;
+      gap: 8px;
+      margin-top: 17px;
+    }
+
+    .move {
+      width: 68px;
+      height: 56px;
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 14px;
+      color: white;
+      background: #173b65;
+      font-size: 1.45rem;
+      font-weight: 900;
+      box-shadow: 0 4px 0 #07162a;
+      cursor: pointer;
+    }
+
+    .move:active { transform: translateY(3px); box-shadow: 0 1px 0 #07162a; }
+    .up { grid-column: 2; }
+    .left { grid-column: 1; grid-row: 2; }
+    .down { grid-column: 2; grid-row: 2; }
+    .right { grid-column: 3; grid-row: 2; }
+
+    .shake { animation: shake .24s linear; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 33%{transform:translateX(-5px)} 66%{transform:translateX(5px)} }
+
+    .success-mark {
+      display: grid;
+      place-items: center;
+      width: 88px;
+      height: 88px;
+      margin: 5px auto 16px;
+      border-radius: 50%;
+      background: var(--green);
+      font-size: 48px;
+      box-shadow: 0 0 0 10px rgba(37,180,107,.14);
+    }
+
+    .success-copy { text-align: center; }
+    .success-copy p { color: #c7d8eb; line-height: 1.5; }
+
+    .result {
+      margin: 18px 0;
+      padding: 14px;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 14px;
+      background: rgba(255,255,255,.07);
+      color: #eaf4ff;
+      text-align: center;
+    }
+
+    .sent-note {
+      display: none;
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 14px;
+      color: #dbffe9;
+      background: rgba(37,180,107,.16);
+      line-height: 1.42;
+      text-align: center;
+    }
+
+    .sent-note.show { display: block; }
+
+    .runner {
+      position: relative;
+      overflow: hidden;
+      height: 280px;
+      border: 5px solid #203c57;
+      border-radius: 20px;
+      background:
+        linear-gradient(#67bff5 0 62%, #76b94d 62% 75%, #75624e 75% 100%);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.16);
+    }
+
+    .runner::before {
+      content: "☁️       ☁️             ☁️";
+      position: absolute;
+      top: 18px;
+      left: 0;
+      width: 160%;
+      color: white;
+      font-size: 2rem;
+      letter-spacing: 2.2rem;
+      opacity: .82;
+      animation: clouds 20s linear infinite;
+    }
+
+    @keyframes clouds { to { transform: translateX(-35%); } }
+
+    .runner::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: 22%;
+      left: 0;
+      height: 5px;
+      background: repeating-linear-gradient(90deg, transparent 0 28px, #d8c4a1 28px 55px);
+      opacity: .72;
+    }
+
+    .mailman {
+      position: absolute;
+      left: 14%;
+      bottom: 23%;
+      z-index: 5;
+      font-size: clamp(3.2rem, 13vw, 5.4rem);
+      line-height: 1;
+      filter: drop-shadow(0 5px 3px rgba(0,0,0,.3));
+      transform-origin: 50% 100%;
+    }
+
+    .mailman.running { animation: step .34s ease-in-out infinite alternate; }
+    .mailman.jumping { animation: jump .72s cubic-bezier(.2,.75,.35,1); }
+
+    @keyframes step { from { transform: rotate(-3deg) translateY(0); } to { transform: rotate(3deg) translateY(-3px); } }
+    @keyframes jump {
+      0%, 100% { transform: translateY(0) rotate(0); }
+      45%, 55% { transform: translateY(-118px) rotate(-4deg); }
+    }
+
+    .obstacle {
+      position: absolute;
+      right: -90px;
+      bottom: 23%;
+      z-index: 4;
+      font-size: clamp(2.8rem, 11vw, 4.5rem);
+      line-height: 1;
+      filter: drop-shadow(0 4px 2px rgba(0,0,0,.28));
+    }
+
+    .mailbox-goal {
+      position: absolute;
+      right: -120px;
+      bottom: 22%;
+      z-index: 4;
+      font-size: clamp(4rem, 15vw, 6.5rem);
+      line-height: 1;
+      filter: drop-shadow(0 5px 3px rgba(0,0,0,.3));
+    }
+
+    .runner-message {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      color: white;
+      background: rgba(4,17,34,.78);
+      text-align: center;
+    }
+
+    .runner-message.show { display: grid; }
+    .runner-message strong { display: block; font-size: 1.35rem; }
+
+    .progress-track {
+      overflow: hidden;
+      height: 13px;
+      margin: 14px 0;
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+    }
+
+    .progress-bar {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--yellow), var(--orange));
+      transition: width .12s linear;
+    }
+
+    .jump-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 64px;
+      margin-top: 14px;
+      border: 0;
+      border-radius: 16px;
+      color: #152033;
+      background: linear-gradient(180deg, #fff088, var(--yellow));
+      box-shadow: 0 6px 0 #d88a0e;
+      font-size: 1.25rem;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .jump-button:active { transform: translateY(3px); box-shadow: 0 3px 0 #d88a0e; }
+
+    .mailbox-button {
+      display: none;
+      width: 100%;
+      min-height: 64px;
+      margin-top: 14px;
+      border: 0;
+      border-radius: 16px;
+      color: white;
+      background: linear-gradient(180deg, #36c879, #159a54);
+      box-shadow: 0 6px 0 #08703a;
+      font-size: 1.1rem;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .mailbox-button.show { display: block; }
+
+    .rules {
+      margin-top: 16px;
+      padding: 14px 17px;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      color: #b7c8dc;
+      background: rgba(3,13,26,.35);
+      font-size: .86rem;
+      line-height: 1.5;
+    }
+
+    .rules strong { color: white; }
+
+    .gift-banner {
+      display: none;
+      margin: 0 0 18px;
+      padding: 15px;
+      border: 2px solid rgba(255,213,74,.55);
+      border-radius: 15px;
+      color: #fff4b8;
+      background: rgba(255,159,28,.13);
+      font-size: 1.05rem;
+      font-weight: 900;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .gift-banner.show { display: block; }
+
+    @media (max-width: 430px) {
+      .shell { padding-inline: 10px; }
+      .screen { padding: 16px; }
+      .status-pill { display: none; }
+      .letter-card { padding: 20px 17px; }
+      .board-wrap { padding: 7px; }
+      .board { gap: 4px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="stamp" aria-hidden="true">✉️</div>
+        <div>
+          <h1>Email Express</h1>
+          <p class="subtitle">Pass It On</p>
+        </div>
+      </div>
+      <div class="status-pill">ONE FRIEND • ONE EMAIL</div>
+    </header>
+
+    <section class="panel" aria-live="polite">
+      <div class="screen active" id="setupScreen">
+        <div class="gift-banner" id="giftBanner"></div>
+        <div class="letter-card">
+          <h2 id="setupTitle">Start the mail chain</h2>
+          <p id="setupIntro">Choose one friend. They receive the invitation, sign up, and complete the delivery.</p>
+        </div>
+
+        <form id="setupForm" novalidate>
+          <div class="field">
+            <label for="playerName">Your first name</label>
+            <input id="playerName" type="text" maxlength="32" autocomplete="name" placeholder="Your name" required />
+          </div>
+          <div class="field">
+            <label for="playerEmail">Your email</label>
+            <input id="playerEmail" type="email" maxlength="120" autocomplete="email" placeholder="you@example.com" required />
+          </div>
+          <div class="field" id="friendField">
+            <label for="friendEmail">Your friend’s email</label>
+            <input id="friendEmail" type="email" maxlength="120" autocomplete="off" placeholder="friend@example.com" required />
+          </div>
+          <label class="check-row" id="permissionRow">
+            <input id="permission" type="checkbox" required />
+            <span>I know this person and I’m sending only this one game invitation.</span>
+          </label>
+          <p class="error" id="formError" role="alert"></p>
+          <button class="primary" id="setupButton" type="submit">OPEN EMAIL &amp; SEND INVITATION ✉️</button>
+        </form>
+        <div class="sent-note" id="firstInviteNote">Your email app opened with one invitation ready. Review it and tap <strong>Send</strong>. Your friend will play the delivery.</div>
+        <p class="privacy">No mailing list. No automatic messages. Your email app opens with one invitation, and you decide whether to send.</p>
+      </div>
+
+      <div class="screen" id="gameScreen">
+        <div class="game-head">
+          <div class="meter"><span>Jumps</span><strong id="moveCount">0</strong></div>
+          <div class="meter"><span>Time</span><strong id="timer">0:00</strong></div>
+          <div class="meter"><span>Hearts</span><strong id="bumpCount">❤️❤️❤️</strong></div>
+        </div>
+        <p class="route-note">Help the mailman jump over dogs and logs. Reach the mailbox and put the letter inside.</p>
+        <div class="runner" id="runner" role="application" aria-label="Mailman delivery course">
+          <div class="mailman" id="mailman" aria-label="mailman">🏃‍♂️</div>
+          <div class="runner-message" id="runnerMessage"><strong id="runnerMessageText"></strong></div>
+        </div>
+        <div class="progress-track" aria-label="Delivery progress"><div class="progress-bar" id="progressBar"></div></div>
+        <button class="jump-button" id="jumpButton" type="button">JUMP! ⬆️</button>
+        <button class="mailbox-button" id="mailboxButton" type="button">PUT LETTER IN MAILBOX 📬</button>
+        <button class="secondary" id="restartRoute" type="button">Restart Delivery</button>
+      </div>
+
+      <div class="screen" id="successScreen">
+        <div class="success-mark" aria-hidden="true">✓</div>
+        <div class="success-copy">
+          <h2>Delivery complete!</h2>
+          <p id="successMessage">The letter is safely inside. Now pass the next invitation forward.</p>
+        </div>
+        <div class="result" id="resultSummary"></div>
+        <div class="field">
+          <label for="nextFriendEmail">Who plays next?</label>
+          <input id="nextFriendEmail" type="email" maxlength="120" autocomplete="off" placeholder="friend@example.com" />
+        </div>
+        <label class="check-row">
+          <input id="nextPermission" type="checkbox" />
+          <span>I know this person and I’m sending only this one game invitation.</span>
+        </label>
+        <p class="error" id="nextError" role="alert"></p>
+        <a class="mail-button" id="sendMail" href="#">OPEN EMAIL &amp; PASS IT ON ✉️</a>
+        <div class="sent-note" id="sentNote">Your email app opened with the message ready. Review it and tap <strong>Send</strong>. Email Express never sends behind your back.</div>
+        <button class="secondary" id="playAgain" type="button">Make Another Delivery</button>
+      </div>
+    </section>
+
+    <div class="rules">
+      <strong>Clean-mail promise:</strong> one person, one invitation, sent from your own email account. Email Express does not save addresses or send repeat messages. GG Play Points are for fun only and have no cash value.
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const params = new URLSearchParams(location.search);
+      const invited = params.get('invite') === '1';
+      const fromName = cleanText(params.get('from') || 'A friend');
+      const giftPoints = clamp(Number(params.get('points')) || 0, 0, 500);
+      const courseSeconds = 24;
+
+      const screens = {
+        setup: document.getElementById('setupScreen'),
+        game: document.getElementById('gameScreen'),
+        success: document.getElementById('successScreen')
+      };
+      const setupForm = document.getElementById('setupForm');
+      const setupTitle = document.getElementById('setupTitle');
+      const setupIntro = document.getElementById('setupIntro');
+      const setupButton = document.getElementById('setupButton');
+      const playerName = document.getElementById('playerName');
+      const playerEmail = document.getElementById('playerEmail');
+      const friendEmail = document.getElementById('friendEmail');
+      const friendField = document.getElementById('friendField');
+      const permissionRow = document.getElementById('permissionRow');
+      const permission = document.getElementById('permission');
+      const formError = document.getElementById('formError');
+      const firstInviteNote = document.getElementById('firstInviteNote');
+      const giftBanner = document.getElementById('giftBanner');
+      const runner = document.getElementById('runner');
+      const mailman = document.getElementById('mailman');
+      const runnerMessage = document.getElementById('runnerMessage');
+      const runnerMessageText = document.getElementById('runnerMessageText');
+      const progressBar = document.getElementById('progressBar');
+      const jumpButton = document.getElementById('jumpButton');
+      const mailboxButton = document.getElementById('mailboxButton');
+      const moveCount = document.getElementById('moveCount');
+      const bumpCount = document.getElementById('bumpCount');
+      const timer = document.getElementById('timer');
+      const sendMail = document.getElementById('sendMail');
+      const nextFriendEmail = document.getElementById('nextFriendEmail');
+      const nextPermission = document.getElementById('nextPermission');
+      const nextError = document.getElementById('nextError');
+      const sentNote = document.getElementById('sentNote');
+
+      let profile = { name: '', email: '' };
+      let run = null;
+      let animationFrame = 0;
+      let spawnTimer = 0;
+      let secondTimer = 0;
+      let obstacles = [];
+      let jumping = false;
+      let pointsToPass = 0;
+
+      if (invited) {
+        setupTitle.textContent = `${fromName} sent you an invitation!`;
+        setupIntro.textContent = 'Sign up, complete the mail route, and put the letter in the mailbox to collect the points.';
+        friendField.hidden = true;
+        friendEmail.required = false;
+        permissionRow.hidden = true;
+        permission.required = false;
+        setupButton.textContent = 'SIGN UP & START DELIVERY 🚶';
+        giftBanner.textContent = `✉️ ${giftPoints} GG Play Points are waiting for you!`;
+        giftBanner.classList.add('show');
+      }
+
+      setupForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const name = cleanText(playerName.value);
+        const email = playerEmail.value.trim();
+        if (!name) return setupError('Please enter your first name.');
+        if (!validEmail(email)) return setupError('Please enter a valid email address.');
+        profile = { name, email };
+        formError.textContent = '';
+
+        if (invited) {
+          beginRoute();
+          return;
+        }
+
+        const friend = friendEmail.value.trim();
+        if (!validEmail(friend)) return setupError('Please enter your friend’s valid email address.');
+        if (friend.toLowerCase() === email.toLowerCase()) return setupError('Choose a different email address for your friend.');
+        if (!permission.checked) return setupError('Please confirm this is one invitation to someone you know.');
+        location.href = invitationMailto(friend, name, 100);
+        firstInviteNote.classList.add('show');
+        setupButton.textContent = 'OPEN INVITATION AGAIN ✉️';
+      });
+
+      jumpButton.addEventListener('click', jump);
+      mailboxButton.addEventListener('click', putLetterInMailbox);
+      document.getElementById('restartRoute').addEventListener('click', beginRoute);
+      document.getElementById('playAgain').addEventListener('click', () => {
+        stopRoute();
+        sentNote.classList.remove('show');
+        nextFriendEmail.value = '';
+        nextPermission.checked = false;
+        show(screens.setup);
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (screens.game.classList.contains('active') && [' ', 'ArrowUp'].includes(event.key)) {
+          event.preventDefault();
+          jump();
+        }
+      });
+
+      sendMail.addEventListener('click', (event) => {
+        const friend = nextFriendEmail.value.trim();
+        nextError.textContent = '';
+        if (!validEmail(friend)) {
+          event.preventDefault();
+          nextError.textContent = 'Please enter the next player’s valid email address.';
+          return;
+        }
+        if (friend.toLowerCase() === profile.email.toLowerCase()) {
+          event.preventDefault();
+          nextError.textContent = 'Choose a different email address for the next player.';
+          return;
+        }
+        if (!nextPermission.checked) {
+          event.preventDefault();
+          nextError.textContent = 'Please confirm this is one invitation to someone you know.';
+          return;
+        }
+        sendMail.href = invitationMailto(friend, profile.name, pointsToPass);
+        sentNote.classList.add('show');
+      });
+
+      function beginRoute() {
+        stopRoute();
+        obstacles.forEach((item) => item.el.remove());
+        obstacles = [];
+        run = {
+          started: performance.now(),
+          lastFrame: performance.now(),
+          elapsed: 0,
+          jumps: 0,
+          hearts: 3,
+          running: true,
+          reached: false
+        };
+        jumping = false;
+        mailman.className = 'mailman running';
+        runnerMessage.classList.remove('show');
+        mailboxButton.classList.remove('show');
+        jumpButton.style.display = 'flex';
+        progressBar.style.width = '0%';
+        updateGameMeters();
+        show(screens.game);
+        spawnObstacle();
+        spawnTimer = window.setInterval(spawnObstacle, 1900);
+        secondTimer = window.setInterval(updateGameMeters, 250);
+        animationFrame = requestAnimationFrame(gameLoop);
+      }
+
+      function gameLoop(now) {
+        if (!run || !run.running) return;
+        const dt = Math.min((now - run.lastFrame) / 1000, .05);
+        run.lastFrame = now;
+        run.elapsed = (now - run.started) / 1000;
+        const progress = Math.min(run.elapsed / courseSeconds, 1);
+        progressBar.style.width = `${progress * 100}%`;
+
+        if (progress >= .84) clearInterval(spawnTimer);
+
+        const playerBox = mailman.getBoundingClientRect();
+        obstacles.forEach((item) => {
+          item.x -= 220 * dt;
+          item.el.style.transform = `translateX(${item.x}px)`;
+          const box = item.el.getBoundingClientRect();
+          if (!item.hit && overlaps(playerBox, box)) {
+            item.hit = true;
+            run.hearts -= 1;
+            item.el.remove();
+            runner.classList.remove('shake');
+            void runner.offsetWidth;
+            runner.classList.add('shake');
+            updateGameMeters();
+            if (run.hearts <= 0) failRoute();
+          }
+        });
+        obstacles = obstacles.filter((item) => item.el.isConnected && item.el.getBoundingClientRect().right > runner.getBoundingClientRect().left - 80);
+
+        if (run && run.running && progress >= 1) reachMailbox();
+        if (run && run.running) animationFrame = requestAnimationFrame(gameLoop);
+      }
+
+      function spawnObstacle() {
+        if (!run || !run.running || run.elapsed > courseSeconds * .84) return;
+        const el = document.createElement('div');
+        const dog = Math.random() > .5;
+        el.className = 'obstacle';
+        el.textContent = dog ? '🐕' : '🪵';
+        el.setAttribute('aria-label', dog ? 'dog obstacle' : 'log obstacle');
+        runner.appendChild(el);
+        obstacles.push({ el, x: runner.clientWidth + 100, hit: false });
+      }
+
+      function jump() {
+        if (!run || !run.running || jumping) return;
+        jumping = true;
+        run.jumps += 1;
+        mailman.className = 'mailman jumping';
+        updateGameMeters();
+        window.setTimeout(() => {
+          jumping = false;
+          if (run && run.running) mailman.className = 'mailman running';
+        }, 720);
+      }
+
+      function failRoute() {
+        if (!run) return;
+        run.running = false;
+        stopTimersOnly();
+        runnerMessageText.textContent = 'The mailbag dropped! Starting the route again…';
+        runnerMessage.classList.add('show');
+        window.setTimeout(beginRoute, 1200);
+      }
+
+      function reachMailbox() {
+        run.running = false;
+        run.reached = true;
+        stopTimersOnly();
+        obstacles.forEach((item) => item.el.remove());
+        const mailbox = document.createElement('div');
+        mailbox.className = 'mailbox-goal';
+        mailbox.textContent = '📬';
+        mailbox.setAttribute('aria-label', 'mailbox');
+        mailbox.style.right = '14%';
+        runner.appendChild(mailbox);
+        mailman.className = 'mailman';
+        runnerMessageText.textContent = 'Mailbox reached! Put the letter inside.';
+        runnerMessage.classList.add('show');
+        jumpButton.style.display = 'none';
+        mailboxButton.classList.add('show');
+      }
+
+      function putLetterInMailbox() {
+        if (!run || !run.reached) return;
+        const speedBonus = Math.max(0, 60 - Math.floor(run.elapsed));
+        pointsToPass = Math.min(500, 100 + run.hearts * 25 + speedBonus + Math.max(0, 30 - run.jumps));
+        const oldTotal = Number(localStorage.getItem('emailExpressPoints')) || 0;
+        const collected = giftPoints;
+        localStorage.setItem('emailExpressPoints', String(oldTotal + collected));
+        document.getElementById('resultSummary').innerHTML =
+          `<strong>${collected} points collected</strong><br>${pointsToPass} new GG Play Points ready for the next player`;
+        document.getElementById('successMessage').textContent = 'The letter is safely inside. Choose the next player and keep the invitation moving.';
+        sendMail.removeAttribute('href');
+        nextFriendEmail.value = '';
+        nextPermission.checked = false;
+        show(screens.success);
+      }
+
+      function invitationMailto(friend, name, points) {
+        const base = location.href.split('?')[0].split('#')[0];
+        const gameLink = `${base}?invite=1&from=${encodeURIComponent(name)}&points=${clamp(points, 0, 500)}`;
+        const subject = `${name} sent you an Email Express invitation!`;
+        const body = `Hi!\n\n${name} sent you ${points} GG Play Points through Email Express. Sign up, help the mailman jump the dogs and logs, and put the letter in the mailbox to collect them.\n\nPlay here:\n${gameLink}\n\nThen pass one invitation to the next player. One friend. One email. No spam. GG Play Points are for fun only and have no cash value.`;
+        return `mailto:${encodeURIComponent(friend)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      }
+
+      function stopRoute() {
+        if (run) run.running = false;
+        stopTimersOnly();
+      }
+
+      function stopTimersOnly() {
+        cancelAnimationFrame(animationFrame);
+        clearInterval(spawnTimer);
+        clearInterval(secondTimer);
+      }
+
+      function updateGameMeters() {
+        if (!run) return;
+        moveCount.textContent = String(run.jumps);
+        bumpCount.textContent = '❤️'.repeat(Math.max(0, run.hearts)) || '0';
+        timer.textContent = formatTime(Math.floor(run.elapsed));
+      }
+
+      function overlaps(a, b) {
+        const padX = 18;
+        const padY = 12;
+        return a.left + padX < b.right - padX && a.right - padX > b.left + padX && a.top + padY < b.bottom && a.bottom > b.top + padY;
+      }
+
+      function show(screen) {
+        Object.values(screens).forEach((item) => item.classList.toggle('active', item === screen));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function setupError(message) { formError.textContent = message; }
+      function validEmail(value) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim()); }
+      function cleanText(value) { return String(value).replace(/[<>\r\n]/g, '').trim().slice(0, 32); }
+      function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+      function formatTime(value) { return `${Math.floor(value / 60)}:${String(value % 60).padStart(2, '0')}`; }
+    })();
+  </script>
+</body>
+</html>
