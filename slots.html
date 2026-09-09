@@ -135,7 +135,10 @@
       else if(final[0]===final[1]||final[0]===final[2]||final[1]===final[2]) multiplier=2;
       const won=bet*multiplier;
       if(won){
-        balance+=won;machine.classList.add("win");
+        balance+=won;machine.classList.add("win");const slotsTotal=Number(localStorage.getItem('jackpotSlotsPoints'))||0;
+const jackpotTotal=Number(localStorage.getItem('jackpotTotalPoints'))||0;
+localStorage.setItem('jackpotSlotsPoints',String(slotsTotal+won));
+localStorage.setItem('jackpotTotalPoints',String(jackpotTotal+won));
         messageEl.textContent=multiplier===25?`🎉 JACKPOT! You won ${won} play coins!`:`You won ${won} play coins!`;
       }else{
         messageEl.textContent=balance<bet?"Out of play coins—tap RESET for 100 more.":"No match. Spin again!";
