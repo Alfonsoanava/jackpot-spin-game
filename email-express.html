@@ -619,6 +619,7 @@
         <a class="mail-button" id="sendMail" href="#">OPEN EMAIL &amp; PASS IT ON ✉️</a>
         <div class="sent-note" id="sentNote">Your email app opened with the message ready. Review it and tap <strong>Send</strong>. Email Express never sends behind your back.</div>
         <button class="secondary" id="playAgain" type="button">Make Another Delivery</button>
+        <a class="secondary" href="./index.html">🎡 BACK TO JACKPOT WHEEL</a>
       </div>
     </section>
 
@@ -634,6 +635,8 @@
       const fromName = cleanText(params.get('from') || 'A friend');
       const giftPoints = clamp(Number(params.get('points')) || 0, 0, 500);
       const courseSeconds = 24;
+      const sharedPointsKey = 'jackpotPoints';
+      const dailyRewardKey = 'emailExpressLastRewardDate';
 
       const screens = {
         setup: document.getElementById('setupScreen'),
@@ -677,6 +680,13 @@
       let obstacles = [];
       let jumping = false;
       let pointsToPass = 0;
+
+      // One-time safety migration: players who used the older Email Express
+      // counter are treated as having collected today's reward already.
+      if (!localStorage.getItem(dailyRewardKey) &&
+          (Number(localStorage.getItem('emailExpressPoints')) || 0) > 0) {
+        localStorage.setItem(dailyRewardKey, localDateKey());
+      }
 
       if (invited) {
         setupTitle.textContent = `${fromName} sent you an invitation!`;
@@ -868,15 +878,20 @@
         if (!run || !run.reached) return;
         const speedBonus = Math.max(0, 60 - Math.floor(run.elapsed));
         pointsToPass = Math.min(500, 100 + run.hearts * 25 + speedBonus + Math.max(0, 30 - run.jumps));
-        const collected = giftPoints || pointsToPass;
-const oldTotal = Number(localStorage.getItem('emailExpressPoints')) || 0;
-const jackpotTotal = Number(localStorage.getItem('jackpotTotalPoints')) || 0;
-localStorage.setItem('emailExpressPoints', String(oldTotal + collected));
-localStorage.setItem('jackpotTotalPoints', String(jackpotTotal + collected));
-        
+        const today = localDateKey();
+        const alreadyCollected = localStorage.getItem(dailyRewardKey) === today;
+        const reward = giftPoints || pointsToPass;
+        let jackpotTotal = Number(localStorage.getItem(sharedPointsKey)) || 0;
 
-        document.getElementById('resultSummary').innerHTML =
-          `<strong>${collected} points collected</strong><br>${pointsToPass} new GG Play Points ready for the next player`;
+        if (!alreadyCollected) {
+          jackpotTotal += reward;
+          localStorage.setItem(sharedPointsKey, String(jackpotTotal));
+          localStorage.setItem(dailyRewardKey, today);
+        }
+
+        document.getElementById('resultSummary').innerHTML = alreadyCollected
+          ? `<strong>Today's Email Express reward was already collected.</strong><br>Jackpot Points balance: ${jackpotTotal}`
+          : `<strong>${reward} Jackpot Points collected!</strong><br>New Jackpot Points balance: ${jackpotTotal}`;
         document.getElementById('successMessage').textContent = 'The letter is safely inside. Choose the next player and keep the invitation moving.';
         sendMail.removeAttribute('href');
         nextFriendEmail.value = '';
@@ -925,6 +940,10 @@ localStorage.setItem('jackpotTotalPoints', String(jackpotTotal + collected));
       function validEmail(value) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value).trim()); }
       function cleanText(value) { return String(value).replace(/[<>\r\n]/g, '').trim().slice(0, 32); }
       function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
+      function localDateKey() {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      }
       function formatTime(value) { return `${Math.floor(value / 60)}:${String(value % 60).padStart(2, '0')}`; }
     })();
   </script>
