@@ -25,7 +25,7 @@
     .reel.spinning span{animation:bounce .13s linear infinite}
     @keyframes bounce{50%{transform:translateY(12px) scale(.9);filter:blur(2px)}}
     .message{min-height:64px;display:grid;place-items:center;margin:16px 4px 10px;padding:10px;border-radius:12px;background:#08030e99;color:var(--gold);font-size:21px;font-weight:900}
-    .controls{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:9px;align-items:stretch}
+    .controls{display:grid;grid-template-columns:1fr 1.5fr;gap:9px;align-items:stretch}
     button{min-height:54px;border:0;border-radius:14px;font:inherit;font-weight:900;cursor:pointer;touch-action:manipulation}
     button:disabled{opacity:.5;cursor:not-allowed}
     .side{background:#2d1944;color:#fff;border:1px solid #7c55a2}
@@ -38,17 +38,17 @@
     .notice{margin-top:16px;color:#a998be;font-size:13px;line-height:1.4}
     .win{animation:winGlow .45s ease-in-out 4}
     @keyframes winGlow{50%{box-shadow:0 0 55px #ffd54a, inset 0 0 25px #ffd54a88}}
-    @media(max-width:410px){.controls{grid-template-columns:1fr 1.3fr 1fr}.side{font-size:13px}.payouts{grid-template-columns:1fr}}
+    @media(max-width:410px){.controls{grid-template-columns:1fr 1.3fr}.side{font-size:13px}.payouts{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <main class="app">
     <span class="tag">FREE-PLAY BETA</span>
     <h1>JACKPOT SLOTS</h1>
-    <p class="sub">Spin three reels and build your play-coin balance. Match three symbols to win big!</p>
+    <p class="sub">Use your Jackpot Points to spin three reels. Wins return to the same shared balance!</p>
 
     <section class="topbar" aria-label="Game balance">
-      <div class="meter"><small>PLAY COINS</small><strong id="balance">100</strong></div>
+      <div class="meter"><small>JACKPOT POINTS</small><strong id="balance">0</strong></div>
       <div class="meter"><small>CURRENT BET</small><strong id="bet">5</strong></div>
     </section>
 
@@ -63,7 +63,6 @@
       <div class="controls">
         <button class="side" id="betButton" type="button">BET +5</button>
         <button class="spin" id="spinButton" type="button">🎰 SPIN</button>
-        <button class="side" id="resetButton" type="button">RESET</button>
       </div>
     </section>
 
@@ -80,7 +79,7 @@
         <span>Every spin costs your selected bet</span>
       </div>
     </section>
-    <p class="notice">Entertainment only. Play coins have no cash value, cannot be purchased, and cannot be exchanged for tokens, NFTs, money, or prizes.</p>
+    <p class="notice">Entertainment only. Jackpot Points have no cash value, cannot be purchased, and cannot be exchanged for tokens, NFTs, money, or prizes.</p>
   <a href="index.html" aria-label="Return to Jackpot Wheel" style="display:flex;align-items:center;justify-content:center;width:min(560px,calc(100% - 20px));min-height:54px;margin:20px auto 0;padding:12px 18px;border:2px solid #ffd54a;border-radius:14px;color:#fff;background:#251139;font:900 16px system-ui,-apple-system,sans-serif;text-decoration:none;box-shadow:0 5px 0 #090311">↩ RETURN TO JACKPOT WHEEL</a></main>
 
   <script>
@@ -93,9 +92,8 @@
     const messageEl = document.getElementById("message");
     const spinButton = document.getElementById("spinButton");
     const betButton = document.getElementById("betButton");
-    const resetButton = document.getElementById("resetButton");
     const machine = document.getElementById("machine");
-    let balance = Number(localStorage.getItem("jackpotSlotsBalance") || 100);
+    let balance = Number(localStorage.getItem("jackpotTotalPoints") || 0);
     let bet = 5;
     let spinning = false;
 
@@ -104,14 +102,14 @@
       crypto.getRandomValues(n);
       return symbols[n[0] % symbols.length];
     }
-    function save(){localStorage.setItem("jackpotSlotsBalance",String(balance))}
+    function save(){localStorage.setItem("jackpotTotalPoints",String(balance))}
     function paint(){balanceEl.textContent=balance;betEl.textContent=bet;spinButton.disabled=spinning||balance<bet}
 
     betButton.addEventListener("click",()=>{
       if(spinning)return;
       bet = bet===5 ? 10 : bet===10 ? 20 : 5;
       betButton.textContent = bet===20 ? "BET → 5" : `BET +${bet===5?5:10}`;
-      messageEl.textContent=`Bet set to ${bet} play coins.`;
+      messageEl.textContent=`Bet set to ${bet} Jackpot Points.`;
       paint();
     });
 
@@ -135,21 +133,16 @@
       else if(final[0]===final[1]||final[0]===final[2]||final[1]===final[2]) multiplier=2;
       const won=bet*multiplier;
       if(won){
-        balance+=won;machine.classList.add("win");const slotsTotal=Number(localStorage.getItem('jackpotSlotsPoints'))||0;
-const jackpotTotal=Number(localStorage.getItem('jackpotTotalPoints'))||0;
-localStorage.setItem('jackpotSlotsPoints',String(slotsTotal+won));
-localStorage.setItem('jackpotTotalPoints',String(jackpotTotal+won));
-        messageEl.textContent=multiplier===25?`🎉 JACKPOT! You won ${won} play coins!`:`You won ${won} play coins!`;
+        balance+=won;machine.classList.add("win");
+        const slotsTotal=Number(localStorage.getItem('jackpotSlotsPoints'))||0;
+        localStorage.setItem('jackpotSlotsPoints',String(slotsTotal+won));
+        messageEl.textContent=multiplier===25?`🎉 JACKPOT! You won ${won} Jackpot Points!`:`You won ${won} Jackpot Points!`;
       }else{
-        messageEl.textContent=balance<bet?"Out of play coins—tap RESET for 100 more.":"No match. Spin again!";
+        messageEl.textContent=balance<bet?"Not enough Jackpot Points. Play another game to earn more.":"No match. Spin again!";
       }
       spinning=false;save();paint();
     }
 
-    resetButton.addEventListener("click",()=>{
-      if(spinning)return;
-      balance=100;bet=5;save();messageEl.textContent="Fresh 100 play coins—good luck!";paint();
-    });
     paint();
   </script>
 </body>
