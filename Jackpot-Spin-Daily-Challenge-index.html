@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10051f">
+  <meta name="description" content="Spin the Jackpot Game Wheel and discover which game you will play next.">
+  <title>Jackpot Game Wheel</title>
+  <style>
+    :root{--gold:#ffd84d;--orange:#f59a20;--ink:#090311;--panel:#180b2a;--muted:#c7b8d8}
+    *{box-sizing:border-box}html,body{min-height:100%}
+    body{margin:0;color:#fff;font-family:ui-rounded,"Arial Rounded MT Bold",system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(circle at 50% 5%,#66208e 0,#26083f 35%,#090311 78%);padding:max(18px,env(safe-area-inset-top)) 14px max(28px,env(safe-area-inset-bottom));text-align:center}
+    button,a{font:inherit;touch-action:manipulation}.app{width:min(760px,100%);margin:auto}
+    .tag{display:inline-block;padding:8px 14px;border:1px solid #c77cff;border-radius:999px;color:#f2dcff;background:#35104f;font-size:.8rem;font-weight:900;letter-spacing:.08em}
+    h1{margin:12px 0 4px;font-size:clamp(2.2rem,9vw,4.7rem);line-height:.98;letter-spacing:-.055em;background:linear-gradient(90deg,#fff27b,var(--orange),#ff58cd);-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 7px 15px #0007)}
+    .sub{margin:9px auto 14px;color:#ddd0e8;font-size:clamp(1rem,3.4vw,1.15rem)}
+    .points{margin:12px auto;padding:15px;border:2px solid var(--gold);border-radius:15px;background:#2a1041;color:#fff086;font-size:1.15rem;font-weight:900}
+    .daily{margin:0 auto 18px;padding:16px;border:2px solid #ff6bd6;border-radius:18px;background:linear-gradient(145deg,#321050,#1b0a31);box-shadow:0 10px 30px #0006;text-align:left}
+    .daily-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.daily-title{margin:0;color:#fff086;font-size:1.08rem}.streak{white-space:nowrap;padding:7px 10px;border-radius:999px;background:#4a174e;color:#fff;font-weight:1000}
+    .daily p{margin:8px 0 12px;color:#e1d5eb;line-height:1.4}.daily-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;border:0;border-radius:12px;color:#241100;background:linear-gradient(#fff17a,var(--gold));box-shadow:0 5px 0 #cf7600;font-weight:1000;text-decoration:none}.daily-btn:active{transform:translateY(2px);box-shadow:0 3px 0 #cf7600}.daily-btn.done{color:#d8ffe6;background:#176d43;box-shadow:none;pointer-events:none}
+    .stage{position:relative;width:min(475px,92vw);margin:auto;padding-top:8px}.pointer{position:absolute;z-index:8;left:50%;top:-2px;transform:translateX(-50%);width:0;height:0;border-left:23px solid transparent;border-right:23px solid transparent;border-top:52px solid #fff281;filter:drop-shadow(0 4px 4px #000)}
+    .wheel{position:relative;overflow:hidden;aspect-ratio:1;border:11px solid var(--gold);border-radius:50%;background:conic-gradient(#f04491 0 90deg,#6436da 90deg 180deg,#f39b20 180deg 270deg,#147ddb 270deg);box-shadow:0 0 0 5px #984d00,0 0 46px #db3aff8c,inset 0 0 28px #0008;transition:transform 4.4s cubic-bezier(.1,.68,.06,1)}
+    .label{position:absolute;left:50%;top:50%;display:flex;align-items:center;justify-content:flex-end;width:45%;height:54px;padding-right:18px;transform-origin:0 50%;font-size:clamp(.78rem,3vw,1.08rem);font-weight:1000;line-height:1.05;text-align:right;text-shadow:0 2px 4px #000}.label:nth-child(1){transform:rotate(45deg) translateY(-50%)}.label:nth-child(2){transform:rotate(135deg) translateY(-50%)}.label:nth-child(3){transform:rotate(225deg) translateY(-50%)}.label:nth-child(4){transform:rotate(315deg) translateY(-50%)}
+    .hub{position:absolute;z-index:6;left:50%;top:50%;display:grid;place-items:center;width:28%;aspect-ratio:1;transform:translate(-50%,-50%);border:7px solid #fff;border-radius:50%;color:#481600;background:linear-gradient(#fff486,#ee8b08);box-shadow:0 5px 22px #0009;font-size:clamp(1rem,4vw,1.55rem);font-weight:1000;cursor:pointer}.hub:disabled{cursor:wait;filter:saturate(.55)}
+    .panel{margin:22px auto 0;padding:18px;border:1px solid #674183;border-radius:20px;background:rgba(20,8,34,.9);box-shadow:0 18px 48px #0008}.status{margin:0;color:var(--muted);font-size:1rem;line-height:1.45}.result{display:none;margin:0;padding:18px;border:1px solid #c55eff;border-radius:15px;background:#2a1041}.result.show{display:block}.result small{display:block;color:#ddc8ed;font-size:.82rem;font-weight:850;letter-spacing:.07em;text-transform:uppercase}.result strong{display:block;margin:6px 0 5px;color:#fff086;font-size:clamp(1.5rem,5vw,2.1rem)}.result p{margin:0;color:#d7c9e4;line-height:1.4}
+    .play{display:none;align-items:center;justify-content:center;width:100%;min-height:58px;margin-top:13px;border:0;border-radius:14px;color:#201200;background:linear-gradient(#fff17a,var(--gold));box-shadow:0 6px 0 #cf7600;font-size:1.08rem;font-weight:1000;text-decoration:none}.play.show{display:flex}.play:active{transform:translateY(3px);box-shadow:0 3px 0 #cf7600}.again{display:none;width:100%;min-height:50px;margin-top:14px;border:2px solid #694d81;border-radius:13px;color:#fff;background:transparent;font-weight:900;cursor:pointer}.again.show{display:block}
+    .games{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:16px}.game-chip{padding:10px 8px;border:1px solid #51356b;border-radius:11px;color:#cab9d9;background:#130821;font-size:.82rem;font-weight:850}.rules{margin:16px 0 0;color:#a998b8;font-size:.8rem;line-height:1.45}.spark{position:fixed;z-index:20;pointer-events:none;font-size:24px;animation:fall 1.25s linear forwards}@keyframes fall{to{transform:translateY(260px) rotate(300deg);opacity:0}}
+    @media(max-width:430px){body{padding-inline:9px}.panel{padding:14px}.wheel{border-width:9px}.label{padding-right:12px}.games{grid-template-columns:1fr 1fr}.daily-top{align-items:flex-start}}
+    @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}.wheel{transition-duration:.01ms}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <span class="tag">GAME PICKER</span><h1>JACKPOT WHEEL</h1><p class="sub">Spin the wheel and play the game it chooses.</p>
+    <div class="points">⭐ JACKPOT POINTS: <span id="totalPoints">0</span></div>
+    <section class="daily" aria-labelledby="dailyTitle">
+      <div class="daily-top"><h2 class="daily-title" id="dailyTitle">🎯 TODAY'S CHALLENGE</h2><span class="streak">🔥 <span id="streakCount">0</span>-DAY STREAK</span></div>
+      <p id="dailyText"></p><a class="daily-btn" id="dailyPlay" href="#">PLAY TODAY'S GAME ▶</a>
+    </section>
+    <section class="stage" aria-label="Jackpot game wheel"><div class="pointer" aria-hidden="true"></div><div class="wheel" id="wheel"><div class="label">FIND THE<br>CHAIN CAT</div><div class="label">EMAIL<br>EXPRESS</div><div class="label">MATCH<br>CARDS</div><div class="label">JACKPOT<br>SLOTS</div></div><button class="hub" id="spin" type="button">SPIN</button></section>
+    <section class="panel"><p class="status" id="status">Tap SPIN to choose today’s game.</p><div class="result" id="result"><small>The wheel picked</small><strong id="gameName"></strong><p id="gameDescription"></p></div><a class="play" id="play" href="#">PLAY GAME ▶</a><button class="again" id="again" type="button">Spin Again</button></section>
+    <div class="games" aria-label="Games on the wheel"><div class="game-chip">🔎 Find the Chain Cat</div><div class="game-chip">✉️ Email Express</div><div class="game-chip">🃏 Match Cards</div><div class="game-chip">🎰 Jackpot Slots</div></div>
+    <p class="rules">Games and points are for entertainment only. Points have no cash value and cannot be exchanged for money, tokens, NFTs, or prizes.</p>
+  </main>
+  <script>
+  (()=>{
+    const games=[
+      {name:'Find the Chain Cat',url:'chaincats-hidden.html',description:'Search the busy picture and find the hidden Chain Cat.'},
+      {name:'Email Express',url:'email-express.html',description:'Carry an invitation past the obstacles and deliver it to the mailbox.'},
+      {name:'Match Cards',url:'cards.html',description:'Flip the cards and find every matching pair.'},
+      {name:'Jackpot Slots',url:'slots.html',description:'Spin the reels and try to line up the symbols.'}
+    ];
+    const $=id=>document.getElementById(id),wheel=$('wheel'),spin=$('spin'),again=$('again'),status=$('status'),result=$('result'),gameName=$('gameName'),gameDescription=$('gameDescription'),play=$('play'),dailyPlay=$('dailyPlay');
+    $('totalPoints').textContent=localStorage.getItem('jackpotTotalPoints')||'0';
+    const pad=n=>String(n).padStart(2,'0');
+    const dateKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const today=new Date(),todayKey=dateKey(today),dayNumber=Math.floor(new Date(today.getFullYear(),today.getMonth(),today.getDate()).getTime()/86400000),dailyGame=games[((dayNumber%games.length)+games.length)%games.length];
+    let streak=Number(localStorage.getItem('jackpotDailyStreak')||0),lastDone=localStorage.getItem('jackpotDailyLastDone')||'';
+    $('dailyText').textContent=`Play ${dailyGame.name} today to keep your streak going.`;
+    dailyPlay.href=dailyGame.url;
+    if(lastDone===todayKey){dailyPlay.textContent='✓ TODAY’S CHALLENGE COMPLETE';dailyPlay.classList.add('done')}
+    $('streakCount').textContent=streak;
+    dailyPlay.addEventListener('click',()=>{
+      if(lastDone===todayKey)return;
+      const yesterday=new Date(today);yesterday.setDate(today.getDate()-1);
+      streak=lastDone===dateKey(yesterday)?streak+1:1;
+      localStorage.setItem('jackpotDailyStreak',String(streak));
+      localStorage.setItem('jackpotDailyLastDone',todayKey);
+      localStorage.setItem('jackpotDailyGame',dailyGame.name);
+    });
+    let rotation=0,spinning=false;
+    spin.addEventListener('click',spinWheel);again.addEventListener('click',resetWheel);
+    function spinWheel(){if(spinning)return;spinning=true;spin.disabled=true;result.classList.remove('show');play.classList.remove('show');again.classList.remove('show');status.style.display='block';status.textContent='The wheel is choosing your game…';const pick=Math.floor(Math.random()*games.length),center=pick*90+45,current=((rotation%360)+360)%360,target=(270-center+360)%360,extra=(target-current+360)%360;rotation+=360*6+extra;wheel.style.transform=`rotate(${rotation}deg)`;window.setTimeout(()=>showResult(games[pick]),4450)}
+    function showResult(game){spinning=false;spin.disabled=false;status.style.display='none';gameName.textContent=game.name;gameDescription.textContent=game.description;play.href=game.url;play.textContent=`PLAY ${game.name.toUpperCase()} ▶`;result.classList.add('show');play.classList.add('show');again.classList.add('show');for(let i=0;i<18;i++){const spark=document.createElement('span');spark.className='spark';spark.textContent=['✨','🎮','⭐'][i%3];spark.style.left=Math.random()*100+'vw';spark.style.top=Math.random()*38+'vh';document.body.appendChild(spark);window.setTimeout(()=>spark.remove(),1300)}}
+    function resetWheel(){result.classList.remove('show');play.classList.remove('show');again.classList.remove('show');status.style.display='block';status.textContent='Tap SPIN to choose another game.'}
+  })();
+  </script>
+</body>
+</html>
