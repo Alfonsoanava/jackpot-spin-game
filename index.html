@@ -15,6 +15,9 @@
     h1{margin:12px 0 4px;font-size:clamp(2.2rem,9vw,4.7rem);line-height:.98;letter-spacing:-.055em;background:linear-gradient(90deg,#fff27b,var(--orange),#ff58cd);-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 7px 15px #0007)}
     .sub{margin:9px auto 14px;color:#ddd0e8;font-size:clamp(1rem,3.4vw,1.15rem)}
     .points{margin:12px auto;padding:15px;border:2px solid var(--gold);border-radius:15px;background:#2a1041;color:#fff086;font-size:1.15rem;font-weight:900}
+    .wallet-card{margin:0 auto 16px;padding:15px;border:2px solid #69a7ff;border-radius:18px;background:linear-gradient(145deg,#171249,#0d1836);box-shadow:0 10px 30px #0006}
+    .wallet-btn{width:100%;min-height:52px;border:0;border-radius:13px;color:#071326;background:linear-gradient(#8fd1ff,#4e8cff);box-shadow:0 5px 0 #2450a0;font-weight:1000;cursor:pointer}.wallet-btn:active{transform:translateY(2px);box-shadow:0 3px 0 #2450a0}.wallet-btn:disabled{opacity:.75;cursor:wait}
+    .wallet-meta{margin:11px 0 0;color:#c9daf8;font-size:.88rem;line-height:1.45;overflow-wrap:anywhere}.wallet-meta strong{color:#fff}.wallet-note{display:block;margin-top:7px;color:#91a5ca;font-size:.76rem}
     .daily{margin:0 auto 18px;padding:16px;border:2px solid #ff6bd6;border-radius:18px;background:linear-gradient(145deg,#321050,#1b0a31);box-shadow:0 10px 30px #0006;text-align:left}
     .daily-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.daily-title{margin:0;color:#fff086;font-size:1.08rem}.streak{white-space:nowrap;padding:7px 10px;border-radius:999px;background:#4a174e;color:#fff;font-weight:1000}
     .daily p{margin:8px 0 12px;color:#e1d5eb;line-height:1.4}.daily-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:48px;border:0;border-radius:12px;color:#241100;background:linear-gradient(#fff17a,var(--gold));box-shadow:0 5px 0 #cf7600;font-weight:1000;text-decoration:none}.daily-btn:active{transform:translateY(2px);box-shadow:0 3px 0 #cf7600}.daily-btn.done{color:#d8ffe6;background:#176d43;box-shadow:none;pointer-events:none}
@@ -32,7 +35,12 @@
 <body>
   <main class="app">
     <span class="tag">GAME PICKER</span><h1>JACKPOT WHEEL</h1><p class="sub">Spin the wheel and play the game it chooses.</p>
-    <div class="points">⭐ JACKPOT POINTS: <span id="totalPoints">0</span></div>
+    <div class="points">🪙 JP WALLET BALANCE: <span id="jpBalance">—</span></div>
+    <section class="wallet-card" aria-label="Base wallet connection">
+      <button class="wallet-btn" id="connectWallet" type="button">🦊 CONNECT METAMASK WALLET #2</button>
+      <p class="wallet-meta" id="walletStatus">Not connected · Base network</p>
+      <small class="wallet-note">Read-only connection. This page never requests token approval or spending permission.</small>
+    </section>
     <section class="daily" aria-labelledby="dailyTitle">
       <div class="daily-top"><h2 class="daily-title" id="dailyTitle">🎯 TODAY'S CHALLENGE</h2><span class="streak">🔥 <span id="streakCount">0</span>-DAY STREAK</span></div>
       <p id="dailyText"></p><a class="daily-btn" id="dailyPlay" href="#">PLAY TODAY'S GAME ▶</a>
@@ -40,7 +48,7 @@
     <section class="stage" aria-label="Jackpot game wheel"><div class="pointer" aria-hidden="true"></div><div class="wheel" id="wheel"><div class="label">FIND THE<br>CHAIN CAT</div><div class="label">EMAIL<br>EXPRESS</div><div class="label">MATCH<br>CARDS</div><div class="label">JACKPOT<br>SLOTS</div></div><button class="hub" id="spin" type="button">SPIN</button></section>
     <section class="panel"><p class="status" id="status">Tap SPIN to choose today’s game.</p><div class="result" id="result"><small>The wheel picked</small><strong id="gameName"></strong><p id="gameDescription"></p></div><a class="play" id="play" href="#">PLAY GAME ▶</a><button class="again" id="again" type="button">Spin Again</button></section>
     <div class="games" aria-label="Games on the wheel"><div class="game-chip">🔎 Find the Chain Cat</div><div class="game-chip">✉️ Email Express</div><div class="game-chip">🃏 Match Cards</div><div class="game-chip">🎰 Jackpot Slots</div></div>
-    <p class="rules">Games and points are for entertainment only. Points have no cash value and cannot be exchanged for money, tokens, NFTs, or prizes.</p>
+    <p class="rules">Game play does not automatically transfer JP. Wallet connection and JP balance checks are read-only. Any real JP reward must use the approved claim process.</p>
   </main>
   <script>
   (()=>{
@@ -50,13 +58,77 @@
       {name:'Match Cards',url:'cards.html',description:'Flip the cards and find every matching pair.'},
       {name:'Jackpot Slots',url:'slots.html',description:'Spin the reels and try to line up the symbols.'}
     ];
-    const $=id=>document.getElementById(id),wheel=$('wheel'),spin=$('spin'),again=$('again'),status=$('status'),result=$('result'),gameName=$('gameName'),gameDescription=$('gameDescription'),play=$('play'),dailyPlay=$('dailyPlay');
-    function refreshPoints(){
-      $('totalPoints').textContent=localStorage.getItem('jackpotTotalPoints')||'0';
+    const JP_CONTRACT='0xb200000000000000000000d30ab577FdEa25D940';
+    const BASE_CHAIN_ID='0x2105';
+    const $=id=>document.getElementById(id),wheel=$('wheel'),spin=$('spin'),again=$('again'),status=$('status'),result=$('result'),gameName=$('gameName'),gameDescription=$('gameDescription'),play=$('play'),dailyPlay=$('dailyPlay'),connectWallet=$('connectWallet'),walletStatus=$('walletStatus'),jpBalance=$('jpBalance');
+    let connectedAccount='';
+
+    const provider=()=>{
+      const injected=window.ethereum;
+      if(!injected)return null;
+      if(Array.isArray(injected.providers))return injected.providers.find(item=>item&&item.isMetaMask)||injected.providers[0]||injected;
+      return injected;
+    };
+    const shortAddress=address=>`${address.slice(0,6)}…${address.slice(-4)}`;
+    const formatUnits18=raw=>{
+      const value=BigInt(raw),base=10n**18n,whole=value/base,fraction=(value%base).toString().padStart(18,'0').replace(/0+$/,'').slice(0,4);
+      return Number(whole).toLocaleString()+(/[^0]/.test(fraction)?'.'+fraction:'');
+    };
+    async function switchToBase(ethereum){
+      const current=await ethereum.request({method:'eth_chainId'});
+      if(current.toLowerCase()===BASE_CHAIN_ID)return;
+      try{await ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:BASE_CHAIN_ID}]})}
+      catch(error){
+        if(error&&error.code===4902){
+          await ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:BASE_CHAIN_ID,chainName:'Base',nativeCurrency:{name:'Ether',symbol:'ETH',decimals:18},rpcUrls:['https://mainnet.base.org'],blockExplorerUrls:['https://basescan.org']}]});
+        }else throw error;
+      }
     }
-    refreshPoints();
-    window.addEventListener('pageshow',refreshPoints);
-    document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshPoints()});
+    async function readJPBalance(){
+      const ethereum=provider();
+      if(!ethereum||!connectedAccount)return;
+      jpBalance.textContent='Checking…';
+      const account=connectedAccount.toLowerCase().replace(/^0x/,'').padStart(64,'0');
+      const raw=await ethereum.request({method:'eth_call',params:[{to:JP_CONTRACT,data:'0x70a08231'+account},'latest']});
+      jpBalance.textContent=`${formatUnits18(raw)} JP`;
+      walletStatus.innerHTML=`<strong>Connected:</strong> ${shortAddress(connectedAccount)} · Base`;
+    }
+    async function connectMetaMask(){
+      const ethereum=provider();
+      if(!ethereum){
+        const dapp=location.href.replace(/^https?:\/\//,'');
+        if(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent))location.href=`https://metamask.app.link/dapp/${dapp}`;
+        else walletStatus.textContent='MetaMask was not detected. Open this page inside MetaMask.';
+        return;
+      }
+      connectWallet.disabled=true;walletStatus.textContent='Waiting for MetaMask…';
+      try{
+        const accounts=await ethereum.request({method:'eth_requestAccounts'});
+        if(!accounts||!accounts[0])throw new Error('No wallet account returned');
+        await switchToBase(ethereum);
+        connectedAccount=accounts[0];
+        connectWallet.textContent='✅ WALLET #2 CONNECTED';
+        await readJPBalance();
+      }catch(error){
+        jpBalance.textContent='—';
+        walletStatus.textContent=error&&error.code===4001?'Connection canceled. No transaction was requested.':'Could not connect. Confirm MetaMask is on Base and try again.';
+        connectWallet.textContent='🦊 CONNECT METAMASK WALLET #2';
+      }finally{connectWallet.disabled=false}
+    }
+    connectWallet.addEventListener('click',connectMetaMask);
+    const injected=provider();
+    if(injected){
+      injected.request({method:'eth_accounts'}).then(async accounts=>{
+        if(!accounts||!accounts[0])return;
+        const chainId=await injected.request({method:'eth_chainId'});
+        if(chainId.toLowerCase()!==BASE_CHAIN_ID)return;
+        connectedAccount=accounts[0];connectWallet.textContent='✅ WALLET #2 CONNECTED';await readJPBalance();
+      }).catch(()=>{});
+      if(injected.on){
+        injected.on('accountsChanged',accounts=>{connectedAccount=accounts&&accounts[0]||'';if(connectedAccount)readJPBalance();else{jpBalance.textContent='—';walletStatus.textContent='Not connected · Base network';connectWallet.textContent='🦊 CONNECT METAMASK WALLET #2'}});
+        injected.on('chainChanged',()=>location.reload());
+      }
+    }
     const pad=n=>String(n).padStart(2,'0');
     const dateKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
     const today=new Date(),todayKey=dateKey(today),dayNumber=Math.floor(new Date(today.getFullYear(),today.getMonth(),today.getDate()).getTime()/86400000),dailyGame=games[((dayNumber%games.length)+games.length)%games.length];
